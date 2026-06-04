@@ -7,7 +7,7 @@ Use this template when dispatching a spec document reviewer subagent.
 **Dispatch after:** Spec document is written to docs/superpowers/specs/
 
 ```
-Task tool (general-purpose):
+Subagent dispatch (general-purpose):
   description: "Review spec document"
   prompt: |
     You are a spec document reviewer. Verify this spec is complete and ready for planning.
@@ -20,9 +20,10 @@ Task tool (general-purpose):
     |----------|------------------|
     | Completeness | TODOs, placeholders, "TBD", incomplete sections |
     | Consistency | Internal contradictions, conflicting requirements |
-    | Clarity | Requirements ambiguous enough to cause someone to build the wrong thing |
-    | Scope | Focused enough for a single plan — not covering multiple independent subsystems |
-    | YAGNI | Unrequested features, over-engineering |
+| Clarity | Requirements ambiguous enough to cause someone to build the wrong thing |
+| Scope | Focused enough for a single plan — not covering multiple independent subsystems |
+| YAGNI | Unrequested features, over-engineering |
+| Security / Boundaries | For relevant specs, auth, tenant/data access, public-token behavior, sensitive data handling, frontend/backend responsibility, and canonical ownership are explicit enough that the planner will not have to guess |
 
     ## Calibration
 
@@ -32,6 +33,9 @@ Task tool (general-purpose):
     stylistic preferences, and "sections less detailed than others" are not.
 
     Approve unless there are serious gaps that would lead to a flawed plan.
+    If the feature touches security, data ownership, API contracts, public routes,
+    payments/documents, or cross-layer behavior, unresolved boundary ambiguity is
+    a serious gap — not a recommendation.
 
     ## Output Format
 

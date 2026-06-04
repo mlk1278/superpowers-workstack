@@ -21,7 +21,7 @@ Every project goes through this process. A todo list, a single-function utility,
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Explore project context** — check files, docs, recent commits
+1. **Explore project context** — check files, docs, recent commits (dispatch exploration subagents for anything beyond a couple of files; see "Dispatching Exploration Subagents" below)
 2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
@@ -103,6 +103,38 @@ digraph brainstorming {
 - Explore the current structure before proposing changes. Follow existing patterns.
 - Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
 - Don't propose unrelated refactoring. Stay focused on what serves the current goal.
+
+## Dispatching Exploration Subagents
+
+Your context is for design judgment, not for absorbing raw source code. When the exploration step requires more than a couple of files — reading several docs, surveying every module for a pattern, finding all callers of a function, mapping cross-cutting concerns, building an inventory of existing components — **dispatch a dedicated exploration subagent** instead of doing the reads in your own context. The subagent's context absorbs the file-reading noise; you receive only the distilled answer.
+
+Failing to do this is the most common cause of context rot in planning sessions. A planner that reads 30 files inline before designing anything starts the design with a degraded context window and worse judgment than one that delegated the reads.
+
+**Dispatch an exploration subagent when:**
+
+- You need to enumerate matches across many files (find all `.parse()` calls, all controllers without tenant scope, all components using a deprecated hook, every place a config value is referenced).
+- You need to read and synthesize multiple docs (architecture/, ADRs, related specs, prior implementation plans).
+- You need to map dependencies, call graphs, or cross-cutting concerns.
+- You're building an inventory of existing patterns to follow ("how do other services in this codebase handle X").
+- The work is *discover, then summarize* rather than *design or decide*.
+
+**Skip the dispatch when:**
+
+- The exploration is one or two files you already know the path of.
+- You already have the answer from earlier in the session.
+- The dispatch round-trip is more expensive than just reading the file (a single 50-line file lookup is faster inline).
+
+**How to prompt the exploration subagent:**
+
+- State precisely **what** to find or enumerate.
+- State **where** to look (specific directories, file globs, doc folders).
+- State **what format** to return: `file:line` list, signature list, brief structured summary, etc.
+- Ask for **raw findings plus a short conclusion**, not interpretation — interpretation is your job. Example: "List all controllers under `apps/api/src/modules/**` that import `@nestjs/passport`. Return `file:line` for each import and a one-line summary at the end of how many files match."
+- For sweep-style discovery the planner will paste into a plan, also ask for the exact `rg` / `grep` invocation the subagent used so the plan can include it as a re-runnable discovery command.
+
+**Effort level for exploration subagents:** default to medium effort. Low-effort exploration agents miss matches and stop early on grep-then-summarize tasks; high-effort wastes tokens on work that doesn't require judgment. Use the subagent dispatch available in your platform, such as a medium-effort GPT-5 Task subagent in Codex. The pattern is the same regardless of platform.
+
+This applies to brainstorming **and** to planning. The writing-plans skill references this section for planning-time exploration; treat it as canonical guidance for both phases.
 
 ## After the Design
 
