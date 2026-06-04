@@ -41,12 +41,18 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Scalability considerations?
 - Performance implications?
 - Security concerns?
+- Clear ownership boundaries?
+- Business rules in the canonical layer?
+- No duplicate primitives/helpers when a canonical owner exists?
+- No spaghetti branching, unnecessary wrappers, or avoidable casts/optionality?
+- Any "code judo" simplification that deletes meaningful complexity?
 
 **Testing:**
 - Tests actually test logic (not mocks)?
 - Edge cases covered?
 - Integration tests where needed?
 - All tests passing?
+- Risky security, data, lifecycle, or contract behavior tested at the owning layer?
 
 **Requirements:**
 - All plan requirements met?
@@ -99,6 +105,8 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Explain WHY issues matter
 - Acknowledge strengths
 - Give clear verdict
+- Prioritize security, data integrity, contract, boundary, and serious maintainability issues
+- Recommend the smallest clean fix shape, especially when a structural simplification can remove complexity
 
 **DON'T:**
 - Say "looks good" without checking
@@ -106,6 +114,8 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Give feedback on code you didn't review
 - Be vague ("improve error handling")
 - Avoid giving a clear verdict
+- Normalize existing technical debt as precedent for new code
+- Flood the review with style nits when larger issues exist
 
 ## Example Output
 
