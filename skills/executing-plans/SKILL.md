@@ -11,7 +11,7 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support, such as Codex. If subagents are available, use superpowers:subagent-driven-development instead of this skill.
 
 ## The Process
 
@@ -27,7 +27,13 @@ For each task:
 1. Mark as in_progress
 2. Follow each step exactly (plan has bite-sized steps)
 3. Run verifications as specified
-4. Mark as completed
+4. Mark as completed in TodoWrite
+5. Update the source plan file on disk before starting the next task:
+   - If the task is a checkbox heading, change `- [ ] Task N` to `- [x] Task N`.
+   - If the task has a status line, change it to `**Status:** Completed`.
+   - Otherwise, add `**Status:** Completed` directly under the task heading.
+
+Only mark the top-level task complete. Do not check off individual sub-steps unless the plan already requires that level of tracking.
 
 ### Step 3: Complete Development
 

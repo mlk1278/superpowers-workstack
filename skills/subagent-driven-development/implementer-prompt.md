@@ -3,7 +3,7 @@
 Use this template when dispatching an implementer subagent.
 
 ```
-Task tool (general-purpose):
+Subagent dispatch (implementer):
   description: "Implement Task N: [task name]"
   prompt: |
     You are implementing Task N: [task name]
@@ -12,9 +12,23 @@ Task tool (general-purpose):
 
     [FULL TEXT of task from plan - paste it here, don't make subagent read file]
 
+    ## References
+
+    [Paste the task's `**References:**` block from the plan verbatim, plus any additional
+    artifacts the implementer needs to read before starting: spec sections, design assets
+    (screenshots, HTML mockups, Figma exports), reference docs, sibling implementations
+    whose pattern is being followed, prior task outputs being built on.
+
+    For visual/design assets, include both the path AND a one-line note on what to extract
+    from each one — the implementer reads the asset, not your mind.
+
+    The implementer does NOT have access to the plan file. If you do not paste a reference
+    here, the implementer will not see it. When in doubt, include it.]
+
     ## Context
 
-    [Scene-setting: where this fits, dependencies, architectural context]
+    [Scene-setting: where this fits in the architecture, dependencies on other tasks,
+    why this task exists, any constraints not captured in the task body itself.]
 
     ## Before You Begin
 
@@ -68,8 +82,8 @@ Task tool (general-purpose):
 
     **How to escalate:** Report back with status BLOCKED or NEEDS_CONTEXT. Describe
     specifically what you're stuck on, what you've tried, and what kind of help you need.
-    The controller can provide more context, re-dispatch with a more capable model,
-    or break the task into smaller pieces.
+    The controller can send missing context to this same thread, re-dispatch only when
+    the thread cannot continue, or break the task into smaller pieces.
 
     ## Before Reporting Back: Self-Review
 
@@ -100,7 +114,7 @@ Task tool (general-purpose):
     ## Report Format
 
     When done, report:
-    - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+    - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT | CONTEXT_EXHAUSTED
     - What you implemented (or what you attempted, if blocked)
     - What you tested and test results
     - Files changed
@@ -109,5 +123,55 @@ Task tool (general-purpose):
 
     Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness.
     Use BLOCKED if you cannot complete the task. Use NEEDS_CONTEXT if you need
-    information that wasn't provided. Never silently produce work you're unsure about.
+    information that wasn't provided. Use CONTEXT_EXHAUSTED only if your context
+    window is too full or too degraded to continue reliably. Never silently produce work
+    you're unsure about.
+
+    ## If A Follow-Up Says "Generate UX Pathways"
+
+    After your implementation is approved, you may receive a `send_input` follow-up
+    asking you to generate navigation pathways for a UX Gate review. Do not start
+    coding when you receive this — generate pathways only.
+
+    If the follow-up includes a Required Skill, load and follow that skill before
+    generating pathways. For FSMCRM frontend UI, `fsmcrm-frontend-work` is required.
+
+    A **navigation pathway** is a numbered, ordered list of concrete UI actions a
+    fresh browser session should perform to exercise one specific concern of the
+    surface you just built (empty state, populated state, create flow, edit flow,
+    error state, breakpoint coverage, dark mode, keyboard navigation, etc.).
+
+    For each pathway, output:
+
+    - A short title naming the concern (e.g., "Customer detail — populated state,
+      edit flow")
+    - A numbered, ordered action list. Each step is one concrete action, including:
+      - Exact URL to navigate to
+      - Exact element to click (label or selector)
+      - Exact form values to type
+      - Exact viewport size for breakpoint steps
+      - Where to take screenshots, with a one-line caption (e.g., "Screenshot:
+        edit drawer open at 1440px")
+
+    Pathway-generation rules:
+
+    1. Generate 5–10 pathways. Each must target a distinct concern.
+    2. Base pathways on the ACTUAL diff you produced — review your own commits
+       and pick pathways that exercise the real change surface, not what the plan
+       hypothetically asked for.
+    3. Cross-reference the design intent and template-pattern files supplied in
+       your References. Pick pathways that put each design rule to the test.
+    4. Pathways must be self-contained: a fresh browser session with no prior
+       state should be able to follow the pathway from step 1 to the end.
+    5. Across the pathway set, cover mobile (375x812), tablet (768x1024),
+       desktop (1440x900), and very large desktop (1920x1080 or wider), plus at
+       least one error/empty-state pathway.
+    6. Output the pathway list ONLY. Do not start a review yourself, do not write
+       code, do not screenshot anything yourself — fresh UX reviewer subagents
+       will execute these pathways in parallel.
+
+    If a later follow-up sends UX reviewer findings back to you, return to normal
+    implementer mode: read the findings, fix the specific issues named (component
+    file + state + breakpoint + deviation), commit, and report DONE. Do not
+    regenerate pathways until explicitly asked again.
 ```

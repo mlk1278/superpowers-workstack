@@ -5,11 +5,15 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching exactly three task agents per implementation task: one implementer, one spec reviewer, and one code quality auditor. Keep all three threads open until that task is approved. Review-only gate tasks, such as UX Gates and Quality Gates, use their specialized flows instead.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Implementers do not read the plan file.** They receive only the task text and references *you paste* into their prompt. When extracting tasks up front, also extract each task's `**References:**` block (if the planner provided one) and any plan-header material that the task depends on — design asset paths with "what to extract" notes, spec section pointers, reference docs, sibling-implementation pointers. Forward those into the implementer prompt's `## References` slot. If a plan lists design assets only at the top under `## Source Material` and the task body doesn't mention them, the planner failed step 5 of writing-plans § Self-Review — but you still need to forward the references; do not silently drop them.
+
+**Core principle:** One persistent implementer thread + one persistent spec reviewer thread + one persistent quality auditor thread per task = high quality, fast iteration without context reload.
+
+The implementer owns the code until both reviewers approve it. The spec reviewer owns spec compliance for the task. The quality auditor owns quality review for the task. If either reviewer requests changes, send the feedback to the same implementer thread with `send_input`; after the implementer fixes it, send the updated commit/context back to the same reviewer thread with `send_input`. If your platform calls this resume/follow-up instead of `send_input`, use that. Do not spawn replacement agents for review loops.
 
 ## When to Use
 
@@ -17,23 +21,18 @@ Execute plan by dispatching fresh subagent per task, with two-stage review after
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
     "subagent-driven-development" [shape=box];
-    "executing-plans" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
+    "Tasks mostly independent?" -> "subagent-driven-development" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
-- Same session (no context switch)
-- Fresh subagent per task (no context pollution)
+**Why this workflow:**
+- Fresh three-agent team per task (no context pollution between tasks)
 - Two-stage review after each task: spec compliance first, then code quality
 - Faster iteration (no human-in-loop between tasks)
 
@@ -45,83 +44,245 @@ digraph process {
 
     subgraph cluster_per_task {
         label="Per Task";
-        "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
+        "Dispatch implementer subagent ONCE (./implementer-prompt.md)" [shape=box];
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
         "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
-        "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
+        "Dispatch spec reviewer subagent ONCE (./spec-reviewer-prompt.md)" [shape=box];
         "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
-        "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
+        "Send spec feedback to SAME implementer via send_input" [shape=box];
+        "Send fix back to SAME spec reviewer via send_input" [shape=box];
+        "Dispatch code quality reviewer subagent ONCE (./code-quality-reviewer-prompt.md)" [shape=box];
         "Code quality reviewer subagent approves?" [shape=diamond];
-        "Implementer subagent fixes quality issues" [shape=box];
-        "Mark task complete in TodoWrite" [shape=box];
+        "Send quality feedback to SAME implementer via send_input" [shape=box];
+        "Send fix back to SAME quality auditor via send_input" [shape=box];
+        "Mark task complete in TodoWrite and source plan" [shape=box];
     }
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box];
+    "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
+    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent ONCE (./implementer-prompt.md)";
+    "Dispatch implementer subagent ONCE (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
-    "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
+    "Answer questions, provide context" -> "Implementer subagent implements, tests, commits, self-reviews";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
-    "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
-    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
+    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent ONCE (./spec-reviewer-prompt.md)";
+    "Dispatch spec reviewer subagent ONCE (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
+    "Spec reviewer subagent confirms code matches spec?" -> "Send spec feedback to SAME implementer via send_input" [label="no"];
+    "Send spec feedback to SAME implementer via send_input" -> "Send fix back to SAME spec reviewer via send_input";
+    "Send fix back to SAME spec reviewer via send_input" -> "Spec reviewer subagent confirms code matches spec?" [label="re-review"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent ONCE (./code-quality-reviewer-prompt.md)" [label="yes"];
+    "Dispatch code quality reviewer subagent ONCE (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
+    "Code quality reviewer subagent approves?" -> "Send quality feedback to SAME implementer via send_input" [label="no"];
+    "Send quality feedback to SAME implementer via send_input" -> "Send fix back to SAME quality auditor via send_input";
+    "Send fix back to SAME quality auditor via send_input" -> "Code quality reviewer subagent approves?" [label="re-review"];
+    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite and source plan" [label="yes"];
+    "Mark task complete in TodoWrite and source plan" -> "More tasks remain?";
+    "More tasks remain?" -> "Dispatch implementer subagent ONCE (./implementer-prompt.md)" [label="yes"];
+    "More tasks remain?" -> "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" [label="no"];
+    "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
+## Thread Ownership
+
+For each implementation task, keep exactly three task threads open from initial dispatch through final approval: the implementer, the spec reviewer, and the quality auditor. Gate tasks are review-only exceptions and use their own flows.
+
+Use this pattern:
+
+1. Spawn the implementer for Task N.
+2. Wait for the implementer to commit and report status.
+3. Spawn the spec reviewer for Task N and keep that reviewer thread open.
+4. If the spec reviewer requests changes, send the findings to the same implementer with `send_input`, wait for its fix commit, then send the updated context back to the same spec reviewer with `send_input`.
+5. After spec approval, spawn the code quality auditor for Task N and keep that auditor thread open.
+6. If the quality auditor requests changes, send the findings to the same implementer with `send_input`, wait for its fix commit, then send the updated context back to the same quality auditor with `send_input`.
+7. Repeat the loop among the same three task agents until both reviewers approve.
+8. Close all three task agents only after both reviewers approve and the task is marked complete.
+
+Do not create new agents for review feedback. The original task team has the task context, edited files, tradeoffs, test history, and prior review findings loaded. Replacing any of them during the loop wastes context and increases the chance of inconsistent fixes.
+
+For the next task, start a fresh three-agent team unless the task explicitly continues the same ownership scope.
+
+## Context Exhaustion
+
+"Context problem" means a task agent's context window is too full or degraded to continue reliably. It does not mean the agent lacks a piece of task information.
+
+If an agent reports `NEEDS_CONTEXT`, treat that as missing task information: send the requested information to the same thread with `send_input`.
+
+Use `CONTEXT_EXHAUSTED` only for context-window capacity or degradation. Do not replace an agent just because it asked for more information.
+
+Replace an agent only when its context is exhausted or it is otherwise unable to continue. When replacing one member of the three-agent task team:
+
+1. Keep the other task agents open.
+2. Spawn a replacement for only the exhausted role.
+3. Give the replacement a handoff prompt with the task objective, current commits, files touched, review status, unresolved findings, verification already run, and what the prior agent owned.
+4. Tell the replacement that work already exists and it must inspect current state before acting.
+5. Continue the same task loop with the replacement in that role.
+
+## Plan Progress Updates
+
+When a task completes all required implementation, verification, spec review, and code quality review, update both:
+
+1. TodoWrite task status
+2. The source implementation plan file on disk
+
+For the plan file, mark only the completed top-level task. Do not check off individual sub-steps unless the plan already requires that level of tracking.
+
+Use the first format that fits the existing plan:
+
+- If the task is a checkbox heading, change `- [ ] Task N` to `- [x] Task N`.
+- If the task has a status line, change it to `**Status:** Completed`.
+- Otherwise, add `**Status:** Completed` directly under the task heading.
+
+Do this before starting the next task so a fresh session can identify the next unfinished task from the plan alone.
+
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Use GPT-5.5 Medium for implementers and spec compliance reviewers by default. Use GPT-5.5 Medium for planning, coordination, debugging, code quality review, and UX review.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+Quality Gate reviewers are the exception: spawn them with `reasoning_effort: xhigh`. If a gate reviewer explicitly decomposes a large review, its helper reviewers should use high effort and disjoint scopes. Fixer agents for Quality Gate findings should use high effort unless the fix is tiny and mechanical.
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+Do not escalate on the first failed review; review loops are expected. Escalate one effort level (Medium -> High) only after two full fix passes still receive essentially the same feedback on the same problem. Escalate again by one level only after the same pattern repeats.
 
-**Architecture, design, and review tasks**: use the most capable available model.
+GPT-5.5 High is a fallback's fallback for normal task work. Avoid GPT-5.5 X High except for explicit Quality Gate reviewer tasks or when the human explicitly requests it.
 
-**Task complexity signals:**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+## Blocking Discipline
 
-## Handling Implementer Status
+After dispatching or messaging subagents, block on the agent result whenever that result determines the next workflow action. Do not rely on asynchronous notifications to resume the workflow later.
 
-Implementer subagents report one of four statuses. Handle each appropriately:
+- For one active agent, call `wait_agent` on that agent before returning to the user unless there is useful independent work to do immediately.
+- For a parallel batch, call `wait_agent` on all agents whose results gate the next step, then process every completed result before continuing.
+- If waiting times out, report exactly which agents are still running and what workflow step is blocked.
+- Return to the user only when no agent result is needed to choose the next action, or when a timeout requires human direction.
+
+## Handling Task Agent Status
+
+Task agents may report these statuses. Handle each appropriately:
 
 **DONE:** Proceed to spec compliance review.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
-**NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
+**NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing information to the same implementer with `send_input`.
+
+**CONTEXT_EXHAUSTED:** The agent's context window is too full or degraded to continue reliably. Spawn a replacement for that role only, using a handoff prompt covering current task state, commits, files touched, verification, open review findings, and what the previous agent already tried or reviewed.
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
-1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
-3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, escalate to the human
+1. If it needs missing task information, provide that information to the same implementer with `send_input`
+2. If its context window is too full, replace only that role using the Context Exhaustion handoff
+3. If the task requires more reasoning, first redirect the same implementer with clearer guidance and up to two full fix passes on the same issue; only then replace or escalate one step
+4. If the task is too large, break it into smaller pieces
+5. If the plan itself is wrong, escalate to the human
 
-**Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+**Never** ignore an escalation or force the same thread to retry without changes. If the implementer said it's stuck, something needs to change.
+
+## UX Gates
+
+Some plans contain a **UX Gate** task — a special review-only task marked `**Type:** UX Gate` that fires up a browser-driven UX reviewer loop after substantive frontend work. UX gates exist to catch failures that nothing else catches: pages that don't render, layouts that drift from the design system, ad-hoc styling that contradicts an established template, and broken interactive states. The planner decides *whether and where* to insert UX gates (see `superpowers:writing-plans` § "UX Gates"); your job is to execute them correctly.
+
+If a UX gate task names a `**Required Skill:**`, include that instruction in the pathway-generation follow-up and in every UX reviewer prompt. For FSMCRM frontend UI, `fsmcrm-frontend-work` is required for UX gates and frontend-review agents.
+
+### Recognizing A UX Gate Task
+
+When extracting tasks up front, scan each task block for `**Type:** UX Gate`. UX gate tasks do **not** follow the regular implementer → spec reviewer → code quality reviewer flow. They follow the UX flow described below. Treat the gate as a single task in TodoWrite, but expect it to spawn more agents than a normal task.
+
+### UX Gate Flow
+
+```dot
+digraph ux_gate {
+    rankdir=TB;
+    "Resume implementer thread from prior task(s)" [shape=box];
+    "Send: 'Generate N navigation pathways for this UX gate'" [shape=box];
+    "Implementer outputs pathways" [shape=box];
+    "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)" [shape=box];
+    "All UX reviewers approve?" [shape=diamond];
+    "Aggregate specific feedback (file:component:state-level)" [shape=box];
+    "Send aggregated feedback to SAME implementer via send_input" [shape=box];
+    "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" [shape=box];
+    "Mark UX gate complete in TodoWrite and source plan" [shape=box];
+
+    "Resume implementer thread from prior task(s)" -> "Send: 'Generate N navigation pathways for this UX gate'";
+    "Send: 'Generate N navigation pathways for this UX gate'" -> "Implementer outputs pathways";
+    "Implementer outputs pathways" -> "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)";
+    "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)" -> "All UX reviewers approve?";
+    "All UX reviewers approve?" -> "Aggregate specific feedback (file:component:state-level)" [label="no"];
+    "Aggregate specific feedback (file:component:state-level)" -> "Send aggregated feedback to SAME implementer via send_input";
+    "Send aggregated feedback to SAME implementer via send_input" -> "Send: 'Generate N navigation pathways for this UX gate'" [label="implementer fixes, regenerate pathways"];
+    "All UX reviewers approve?" -> "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" [label="yes"];
+    "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" -> "Mark UX gate complete in TodoWrite and source plan";
+}
+```
+
+**Step-by-step:**
+
+1. **Resume the implementer thread** from the most recent task that built code in the surface under review. The implementer already has the relevant files and decisions in context. Do **not** spawn a fresh implementer; this is the same persistent thread as the prior implementation task(s).
+2. **Ask the implementer to generate pathways.** Send via `send_input`:
+   > "We are now in a UX Gate for \[surface]. Review the actual diff you produced against the design intent, the template-pattern references, the UX acceptance criteria, and any Required Skill from the gate task. Then generate \[N=5–10] navigation pathways for UX review. Each pathway is a numbered, ordered list of concrete UI actions a fresh browser session should perform (URL to load, clicks, form fills, hover states, keyboard nav, viewport changes). Across the pathway set, cover mobile, tablet, desktop, and very large desktop viewports unless explicitly out of scope. Each pathway should target a distinct concern (empty state, populated state, create flow, edit flow, error state, responsive breakpoint, dark mode, keyboard nav, etc.). Report only the pathway list. Do not start any review yourself."
+3. **Dispatch UX reviewers in parallel** — one ephemeral subagent per pathway, each in a *fresh session* using `./ux-reviewer-prompt.md`. Include the gate task's `**Required Skill:**` block in every reviewer prompt. Do not reuse UX reviewer threads across pathways or across loop iterations; freshness is the whole point.
+4. **Aggregate UX feedback.** UX reviewers return specific, actionable findings (file:component:state-level — e.g., "`apps/web/components/.../customer-card.tsx`: empty-state copy is bottom-aligned in screenshot; design asset has it center-aligned"). Aggregate findings across reviewers, deduplicate, and group by component/concern.
+5. **Send aggregated feedback to the same implementer thread** via `send_input` with: "UX reviewers returned the following specific findings. Fix them, then commit. Do not regenerate pathways yet — wait for instruction." After the implementer commits the fixes, send the next instruction: "Now regenerate pathways based on the updated implementation."
+6. **Loop steps 3–5** until UX reviewers approve. UX reviewer iterations are expected; do not escalate on the first round.
+7. **Dispatch the code quality reviewer** on the *entire UX-gate diff* (from the gate's first fix commit through the last). This catches over-engineering or sloppy fixes introduced during the UX loop.
+8. **Mark the UX gate task complete** in TodoWrite and the source plan.
+
+### Pathway Discipline
+
+- **Pathways are generated at runtime, not specified in the plan.** The plan provides UX acceptance criteria, design references, and optional coverage hints; the implementer generates the actual pathway list because implementations drift from plans and the implementer has the actual code in context.
+- **Each pathway runs in a fresh session.** Reusing browser sessions across pathways causes false positives (cookies, auth state, dirty form state) and false negatives (the reviewer "remembers" the page rendered correctly).
+- **Pathways are regenerated each loop iteration.** The implementation has changed since the prior pathway list was generated, so new affordances or regressed states need fresh enumeration. The cost is one extra implementer turn per loop, which is cheaper than missing a regression.
+- **Responsive coverage is required.** For frontend UI gates, the pathway set must cover mobile, tablet, desktop, and very large desktop viewports unless the gate task explicitly excludes one.
+- **Cap pathways at ~10.** More than that suggests the gate's surface is too large and should have been split into multiple gates by the planner. If you find yourself with 20 pathways, escalate to the human — the gate is wrong, not the agents.
+
+### Specificity Of UX Feedback
+
+UX feedback that goes back to the implementer **must be specific**. "The page looks off" is unusable; "header height is 96px in the implementation but 64px in the design asset, and the action bar in `apps/web/components/.../customer-toolbar.tsx` overflows at tablet (768x1024)" is actionable. The UX reviewer prompt enforces this format; the orchestrator's job is to reject vague feedback before forwarding it. If a UX reviewer returns vague findings, send back to the *same UX reviewer thread* with `send_input`: "Be specific. For each finding, name the component file, the visual state, the breakpoint, and the exact deviation from the design intent. Re-screenshot if needed." Only forward to the implementer once feedback meets that bar.
+
+### When UX Gate Diverges From The Plan
+
+If, during pathway generation, the implementer reports that the implementation diverges from the plan's design intent in a way that is *intentional* and *correct* (e.g., "The plan referenced design-v1.png but the latest design in the repo is design-v2.png and we built to v2"), pause the gate, surface the divergence to the human, and resolve before continuing. UX reviewers will otherwise file findings against the wrong target.
+
+## Quality Gates
+
+Some plans contain **Quality Gate** tasks — review-only tasks marked `**Type:** Quality Gate`. Quality gates are a high-effort production-readiness check for a completed milestone slice or the full plan. They are deliberately higher-signal than per-task code-quality review: security, contracts, data integrity, ownership boundaries, major structural regressions, and risky untested behavior.
+
+Every non-docs implementation plan should end with a final Quality Gate. Large plans may also include milestone gates after coherent feature slices. Do not invent extra milestone gates at runtime; the planner decides where they belong. If a code-bearing plan has no final Quality Gate, run one final gate anyway and report that the plan should be updated.
+
+### Recognizing A Quality Gate Task
+
+When extracting tasks up front, scan each task block for `**Type:** Quality Gate`. Quality Gate tasks do **not** follow the regular implementer → spec reviewer → code quality reviewer flow. They follow the gate flow below.
+
+### Quality Gate Flow
+
+1. **Identify the review surface.** Use the gate task's surface definition, task range, and base/head commits. For final fallback gates, use the full implementation diff.
+2. **Spawn one gate reviewer** using `./gate-reviewer-prompt.md` with `reasoning_effort: xhigh`. Keep this reviewer thread open until the gate passes.
+3. **Allow controlled decomposition.** If the gate reviewer says the surface is too large, it may dispatch up to 3 high-effort helper reviewers with disjoint scopes and synthesize their findings. Do not create overlapping helpers.
+4. **Process findings.** Reject vague gate feedback before sending it to a fixer. Findings must include file:line, impact, and smallest clean fix shape.
+5. **Route fixes to the right owner.**
+   - If the finding belongs to one recently completed task and its implementer thread is still usable, send findings to that same implementer with `send_input`.
+   - If the finding spans multiple completed tasks or the original implementer threads are closed, spawn high-effort fixer agent(s) with disjoint write scopes.
+   - Do not hand one broad, tangled gate-fix task to a single agent when the findings have clean ownership boundaries.
+6. **Re-review in the same gate thread.** After fixes are committed and verification is reported, send the updated commit range and fix summary back to the same xhigh gate reviewer with `send_input`.
+7. **Loop until pass.** Quality Gate iterations are expected. Do not proceed to finishing-a-development-branch until the gate status is `Pass`.
+8. **Mark the gate complete** in TodoWrite and the source plan.
+
+### Quality Gate Discipline
+
+- **High signal only.** Gate findings should block or seriously question merge readiness. Nits belong nowhere in this gate.
+- **Security first.** Auth, tenant isolation, public-token flows, secrets, CSRF/session behavior, XSS, SSRF/uploads, webhooks/payments, and sensitive logging are always in scope.
+- **Do not normalize debt.** Existing bad patterns are not precedent. Flag new or worsened use of a bad pattern and suggest a follow-up ticket for unrelated existing debt.
+- **Code judo over polish.** Prefer fixes that delete complexity, move logic to the canonical owner, make contracts explicit, or decompose a large/tangled unit.
+- **Separate from UX Gates.** UX Gates inspect rendered behavior. Quality Gates inspect production readiness, architecture, contracts, security, and tests.
 
 ## Prompt Templates
 
 - `./implementer-prompt.md` - Dispatch implementer subagent
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
+- `./ux-reviewer-prompt.md` - Dispatch UX reviewer subagent (one per pathway, parallel, fresh sessions only)
+- `./gate-reviewer-prompt.md` - Dispatch xhigh Quality Gate reviewer for milestone or final production-readiness gate
 
 ## Example Workflow
 
@@ -148,7 +309,7 @@ Implementer: "Got it. Implementing now..."
   - Self-review: Found I missed --force flag, added it
   - Committed
 
-[Dispatch spec compliance reviewer]
+[Dispatch spec compliance reviewer ONCE]
 Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 
 [Get git SHAs, dispatch code quality reviewer]
@@ -168,33 +329,36 @@ Implementer:
   - Self-review: All good
   - Committed
 
-[Dispatch spec compliance reviewer]
+[Dispatch spec compliance reviewer ONCE]
 Spec reviewer: ❌ Issues:
   - Missing: Progress reporting (spec says "report every 100 items")
   - Extra: Added --json flag (not requested)
 
-[Implementer fixes issues]
+[Send reviewer findings to same Task 2 implementer with send_input]
 Implementer: Removed --json flag, added progress reporting
 
-[Spec reviewer reviews again]
+[Send updated commit/context to same spec reviewer with send_input]
 Spec reviewer: ✅ Spec compliant now
 
-[Dispatch code quality reviewer]
+[Dispatch code quality reviewer ONCE]
 Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
 
-[Implementer fixes]
+[Send quality findings to same Task 2 implementer with send_input]
 Implementer: Extracted PROGRESS_INTERVAL constant
 
-[Code reviewer reviews again]
+[Send updated commit/context to same quality auditor with send_input]
 Code reviewer: ✅ Approved
 
 [Mark Task 2 complete]
 
 ...
 
+Task N: Final Quality Gate
+[Run Quality Gate with xhigh gate-reviewer]
+Gate reviewer: Gate Status: Pass
+
 [After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[Confirm final Quality Gate already passed; no fallback needed]
 
 Done!
 ```
@@ -224,6 +388,7 @@ Done!
 - Review loops ensure fixes actually work
 - Spec compliance prevents over/under-building
 - Code quality ensures implementation is well-built
+- Final Quality Gate catches cross-task security, contract, data integrity, ownership, and major maintainability risks before merge
 
 **Cost:**
 - More subagent invocations (implementer + 2 reviewers per task)
@@ -238,6 +403,9 @@ Done!
 - Skip reviews (spec compliance OR code quality)
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
+- Spawn a new implementer to fix reviewer feedback while the original task implementer thread is open and not `CONTEXT_EXHAUSTED`
+- Spawn a new spec reviewer or quality auditor for re-review while the original reviewer/auditor thread is open and not `CONTEXT_EXHAUSTED`
+- Close any member of the task's three-agent team before both spec and quality reviews approve
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)
@@ -246,6 +414,9 @@ Done!
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
 - Move to next task while either review has open issues
+- Skip the final Quality Gate for code-bearing plans. If the plan omitted it, run a fallback final gate and report the plan gap.
+- Treat a Quality Gate as a nit/style review instead of a production-readiness gate
+- Spawn broad overlapping fixer agents for Quality Gate findings; split by clear ownership or reuse the responsible implementer thread
 
 **If subagent asks questions:**
 - Answer clearly and completely
@@ -253,14 +424,31 @@ Done!
 - Don't rush them into implementation
 
 **If reviewer finds issues:**
-- Implementer (same subagent) fixes them
-- Reviewer reviews again
+- Send findings to the same implementer with `send_input`
+- Same implementer fixes them
+- Send the updated commit/context back to the same reviewer or auditor with `send_input`
 - Repeat until approved
 - Don't skip the re-review
 
 **If subagent fails task:**
-- Dispatch fix subagent with specific instructions
+- First send specific recovery instructions to the same role thread
+- Dispatch a replacement only after assessing that the agent is closed, context-exhausted, or cannot continue
+- Replacement gets a handoff prompt and joins the same task loop; do not restart the task from scratch
 - Don't try to fix manually (context pollution)
+
+**UX gate-specific never:**
+- Reuse a UX reviewer thread across pathways or across loop iterations (every pathway gets a fresh session — that's the point)
+- Run UX reviewers sequentially when they could run in parallel (one per pathway, all fanned out at once)
+- Forward vague UX feedback ("looks off", "feels wrong") to the implementer — bounce it back to the UX reviewer with `send_input` demanding component:state:breakpoint specificity
+- Skip pathway regeneration after a fix commit (the implementation changed; old pathways may miss new regressions)
+- Skip the final code quality review on the UX-gate diff — UX-loop fix passes are the most likely place for sloppy/over-engineered code to slip in
+- Spawn a UX gate flow on tasks that aren't marked `**Type:** UX Gate` (the planner makes this decision; do not insert one yourself)
+
+**Quality gate-specific never:**
+- Run milestone gates after every task; milestone gates belong after large coherent feature slices only
+- Proceed to branch finishing while a Quality Gate has unresolved Critical or Important findings
+- Replace the xhigh gate reviewer thread during re-review unless it is context-exhausted or unable to continue
+- Forward vague gate findings to fixers; require file:line, impact, and smallest clean fix shape
 
 ## Integration
 
@@ -272,6 +460,3 @@ Done!
 
 **Subagents should use:**
 - **superpowers:test-driven-development** - Subagents follow TDD for each task
-
-**Alternative workflow:**
-- **superpowers:executing-plans** - Use for parallel session instead of same-session execution

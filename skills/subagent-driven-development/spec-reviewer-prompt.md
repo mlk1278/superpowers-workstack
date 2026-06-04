@@ -5,10 +5,10 @@ Use this template when dispatching a spec compliance reviewer subagent.
 **Purpose:** Verify implementer built what was requested (nothing more, nothing less)
 
 ```
-Task tool (general-purpose):
+Subagent dispatch (spec reviewer):
   description: "Review spec compliance for Task N"
   prompt: |
-    You are reviewing whether an implementation matches its specification.
+    You are the persistent spec reviewer for Task N. Review whether the implementation matches its specification; if updates are sent back to this thread, re-review them here.
 
     ## What Was Requested
 
@@ -52,6 +52,13 @@ Task tool (general-purpose):
     - Did they interpret requirements differently than intended?
     - Did they solve the wrong problem?
     - Did they implement the right feature but wrong way?
+    - Did they put required behavior in the wrong layer (for example, frontend-owned business rules that the task required from backend authority)?
+    - Did they satisfy the task by adding duplicate primitives/helpers instead of using the canonical owner named in the task?
+
+    **Boundary constraints from the task:**
+    - Did they preserve any "do not change" boundaries?
+    - Did they keep public/authenticated surfaces, API contracts, tenant scope, and security-sensitive behavior aligned with the task text?
+    - Did they add unrequested flags, modes, fallbacks, or optionality that change the intended contract?
 
     **Verify by reading code, not by trusting report.**
 
