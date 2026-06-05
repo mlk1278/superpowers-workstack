@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+description: Use when starting a conversation or choosing whether specialized skills apply to the current user request
 ---
 
 <SUBAGENT-STOP>
@@ -8,11 +8,11 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 </SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+Use skills when their trigger clearly matches the user's request or the user names the skill.
 
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+Do not invoke skills purely as a defensive ritual. If a task is small, direct, and outside a skill's stated trigger, proceed with normal engineering judgment.
 
-This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+If a skill applies to the task, use it. If you invoke a skill and it turns out to be the wrong fit, say so briefly and continue without forcing its workflow.
 </EXTREMELY-IMPORTANT>
 
 ## Instruction Priority
@@ -43,15 +43,13 @@ Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-too
 
 ## The Rule
 
-**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+**Invoke named skills and clearly relevant skills before substantive work.** Match the user's request to the skill descriptions. Skills are tools for situations that need their workflow, not mandatory overhead for every adjacent keyword.
 
 ```dot
 digraph skill_flow {
     "User message received" [shape=doublecircle];
-    "About to EnterPlanMode?" [shape=doublecircle];
-    "Already brainstormed?" [shape=diamond];
-    "Invoke brainstorming skill" [shape=box];
-    "Might any skill apply?" [shape=diamond];
+    "Skill named by user?" [shape=diamond];
+    "Clear trigger match?" [shape=diamond];
     "Invoke Skill tool" [shape=box];
     "Announce: 'Using [skill] to [purpose]'" [shape=box];
     "Has checklist?" [shape=diamond];
@@ -59,14 +57,11 @@ digraph skill_flow {
     "Follow skill exactly" [shape=box];
     "Respond (including clarifications)" [shape=doublecircle];
 
-    "About to EnterPlanMode?" -> "Already brainstormed?";
-    "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
-    "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
-    "Invoke brainstorming skill" -> "Might any skill apply?";
-
-    "User message received" -> "Might any skill apply?";
-    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
-    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
+    "User message received" -> "Skill named by user?";
+    "Skill named by user?" -> "Invoke Skill tool" [label="yes"];
+    "Skill named by user?" -> "Clear trigger match?" [label="no"];
+    "Clear trigger match?" -> "Invoke Skill tool" [label="yes"];
+    "Clear trigger match?" -> "Respond (including clarifications)" [label="no"];
     "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
     "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
     "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
@@ -77,32 +72,35 @@ digraph skill_flow {
 
 ## Red Flags
 
-These thoughts mean STOP—you're rationalizing:
+These thoughts mean STOP if the request clearly matches a skill's trigger:
 
 | Thought | Reality |
 |---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "The user named this skill, but I can skip reading it" | Named skills must be read. |
 | "I need more context first" | Skill check comes BEFORE clarifying questions. |
 | "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
+| "The trigger matches, but I can check git/files quickly" | Skills may define how to inspect state. |
 | "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "This doesn't need a formal skill" | If the trigger clearly matches, use it. |
 | "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
+| "The skill is overkill" | Only skip when the task is genuinely outside the trigger. |
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+
+Non-red-flag: "This is a narrow typo, copy, or CSS tweak with an obvious owner and no broader behavior/design question." Handle it directly unless another skill specifically says it applies.
 
 ## Skill Priority
 
 When multiple skills could apply, use this order:
 
-1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
-2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+1. **Process skills first** (brainstorming, writing-specs, debugging) - these determine WHAT should be built and why
+2. **Planning/execution skills second** (writing-plans, subagent-driven-development) - these determine HOW to build and verify it
+3. **Domain skills alongside the relevant phase** (frontend-design, mcp-builder, project-specific skills) - these guide specialized execution
 
-"Let's build X" → brainstorming first, then implementation skills.
-"Fix this bug" → debugging first, then domain-specific skills.
+"Let's design/build an ambiguous new feature" -> brainstorming first, then writing-specs for substantial work, then writing-plans, then implementation skills.
+"Fix this reproducible/nontrivial bug" -> debugging first, then domain-specific skills.
+"Change this button padding" -> the frontend/domain skill may apply, but brainstorming/debugging usually do not.
 
 ## Skill Types
 

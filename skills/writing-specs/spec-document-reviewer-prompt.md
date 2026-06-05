@@ -1,7 +1,5 @@
 # Spec Document Reviewer Prompt Template
 
-Compatibility copy for older docs/tests that still reference the historical brainstorming path. The active workflow is `skills/writing-specs/`; keep this template aligned with `../writing-specs/spec-document-reviewer-prompt.md`.
-
 Use this template after a compact feature spec is saved and before implementation planning starts.
 
 ```
@@ -38,3 +36,4 @@ Subagent dispatch (general-purpose):
     **Recommendations:**
     - [non-blocking suggestions, if any]
 ```
+

@@ -168,7 +168,7 @@ description: Use for TDD - write test first, watch it fail, write minimal code, 
 description: Use when executing implementation plans with independent tasks in the current session
 
 # ✅ GOOD: Triggering conditions only
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing a new feature, meaningful behavior change, or bug fix with observable behavior
 ```
 
 **Content:**
@@ -501,7 +501,7 @@ Capture rationalizations from baseline testing (see Testing section below). Ever
 ```markdown
 | Excuse | Reality |
 |--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
+| "Too simple to test" | Valid only for presentation/mechanical tweaks with no behavior. Otherwise, test it. |
 | "I'll test after" | Tests passing immediately prove nothing. |
 | "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
 ```
@@ -527,7 +527,7 @@ Make it easy for agents to self-check when rationalizing:
 Add to description: symptoms of when you're ABOUT to violate the rule:
 
 ```yaml
-description: use when implementing any feature or bugfix, before writing implementation code
+description: use when implementing a new feature, meaningful behavior change, or bug fix with observable behavior
 ```
 
 ## RED-GREEN-REFACTOR for Skills

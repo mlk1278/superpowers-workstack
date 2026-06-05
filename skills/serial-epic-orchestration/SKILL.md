@@ -12,6 +12,7 @@ Coordinate several large tickets by doing the human-heavy brainstorming once, sa
 This is a wrapper workflow around:
 
 - `superpowers:brainstorming` for upfront product/design discovery
+- `superpowers:writing-specs` for current-state specs
 - `superpowers:writing-plans` for current-code implementation plans
 - `superpowers:subagent-driven-development` for executing those plans
 - `superpowers:finishing-a-development-branch` when an implementation run reaches completion
@@ -32,7 +33,7 @@ Use this skill when all of these are true:
 
 Do not use this skill for:
 
-- A single feature that fits the normal `brainstorming -> writing-plans -> subagent-driven-development` flow.
+- A single feature that fits the normal `brainstorming -> writing-specs -> writing-plans -> subagent-driven-development` flow.
 - Independent tasks that can be implemented in parallel.
 - Small tasks where the artifact overhead would exceed the implementation work.
 - A situation where the user wants one immediate implementation plan for all work.
@@ -45,8 +46,8 @@ Do not use this skill for:
 4. **Briefs are intent, not implementation truth.** File paths, field names, APIs, and code anchors in briefs are observations only and must be re-verified by the implementation orchestrator.
 5. **Every state transition is written to disk before acting on it.** If a session dies, the next agent must be able to resume from artifacts without chat history.
 6. **Pause before dispatch.** Unless the user explicitly says "continue through all epics without asking", pause before each epic dispatch and tell the user which epic is next.
-7. **Child orchestrators skip interactive brainstorming, not specification discipline.** They must still write a current-state spec/design document before writing the implementation plan.
-8. **Child orchestrators must explicitly invoke and follow `writing-plans` and `subagent-driven-development`.** Do not paraphrase those skills from memory.
+7. **Child orchestrators skip interactive brainstorming, not specification discipline.** They must still use `writing-specs` to write a current-state spec before writing the implementation plan.
+8. **Child orchestrators must explicitly invoke and follow `writing-specs`, `writing-plans`, and `subagent-driven-development`.** Do not paraphrase those skills from memory.
 9. **If drift changes the meaning of a later epic, stop and ask.** Do not silently reinterpret product intent.
 
 ## Modes
@@ -485,7 +486,7 @@ Your job is to turn this epic brief into current, verified implementation work a
 
 You must explicitly invoke and follow these skills in order:
 
-1. `superpowers:brainstorming` discipline only for writing a current-state design/spec from existing brief and current repo context. Skip interactive brainstorming because it already happened, but keep the spec quality gates: scope, architecture, components, data flow, error handling, testing, self-review for ambiguity and drift.
+1. `superpowers:writing-specs` exactly. Read the skill and write a compact current-state spec from the existing brief and current repo context. Skip interactive brainstorming because it already happened, but keep the spec quality gates: scope, architecture, components, data flow, error handling, testing, self-review for ambiguity and drift.
 2. `superpowers:writing-plans` exactly. Read the skill and follow its instructions. Your implementation plan must be tutorialized, self-contained per task, current-code anchored, tests-first, and robust enough for low-effort implementer agents.
 3. `superpowers:subagent-driven-development` exactly. Read the skill and follow its implementer, spec reviewer, code quality reviewer, UX gate, plan-progress, and blocking rules.
 4. `superpowers:finishing-a-development-branch` when the implementation workflow reaches branch completion.
@@ -526,7 +527,7 @@ If current repo state only changes implementation details, adapt the spec and pl
 
 You must create:
 
-1. A current-state spec/design document under `docs/superpowers/specs/YYYY-MM-DD-<epic-slug>-design.md`
+1. A current-state spec document under `docs/superpowers/specs/YYYY-MM-DD-<epic-slug>-spec.md`
 2. A detailed implementation plan under `docs/superpowers/plans/YYYY-MM-DD-<epic-slug>.md`
 3. Code/test/doc changes required by that plan
 4. Commits as required by the plan and subagent workflow
@@ -678,7 +679,7 @@ Fix: one active epic implementation orchestrator. Always wait and update artifac
 
 Problem: brief lacks current code anchors and task-level detail.
 
-Fix: child must write spec, then use `writing-plans`, then use `subagent-driven-development`.
+Fix: child must use `writing-specs`, then use `writing-plans`, then use `subagent-driven-development`.
 
 ### Failure: Resume Depends On Chat History
 

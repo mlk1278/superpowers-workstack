@@ -108,6 +108,9 @@ Subagent dispatch (implementer):
     - Do tests actually verify behavior (not just mock behavior)?
     - Did I follow TDD if required?
     - Are tests comprehensive?
+    - If I am claiming browser, public-link, API+DB, provider-live, or full-stack
+      behavior, did the controller provide runtime preflight evidence that the
+      database is migrated/queryable and both backend and frontend boot?
 
     If you find issues during self-review, fix them now before reporting.
 
@@ -116,7 +119,8 @@ Subagent dispatch (implementer):
     When done, report:
     - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT | CONTEXT_EXHAUSTED
     - What you implemented (or what you attempted, if blocked)
-    - What you tested and test results
+    - What you tested, test results, and verification scope (`unit`, `mocked`,
+      `API+DB`, `browser`, `provider-live`, or `full-stack`)
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns
@@ -129,9 +133,11 @@ Subagent dispatch (implementer):
 
     ## If A Follow-Up Says "Generate UX Pathways"
 
-    After your implementation is approved, you may receive a `send_input` follow-up
-    asking you to generate navigation pathways for a UX Gate review. Do not start
-    coding when you receive this — generate pathways only.
+    After implementation work is approved, you may receive a `send_input` follow-up
+    asking you to generate navigation pathways for a UX Gate review. You may be the
+    implementer who built the surface, or you may be a fresh pathway generator given
+    a context bundle for multiple implementation tasks. Do not start coding when you
+    receive this — generate pathways only.
 
     If the follow-up includes a Required Skill, load and follow that skill before
     generating pathways. For FSMCRM frontend UI, `fsmcrm-frontend-work` is required.

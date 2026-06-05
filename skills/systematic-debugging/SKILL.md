@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: Use when fixing a nontrivial bug, failing test/build, regression, performance issue, integration problem, or unexpected behavior whose root cause is not already clear
 ---
 
 # Systematic Debugging
@@ -13,23 +13,28 @@ Random fixes waste time and create new bugs. Quick patches mask underlying issue
 
 **Violating the letter of this process is violating the spirit of debugging.**
 
+This skill is for real debugging work. It is not required for every mention of the word "bug" or for narrow, low-risk corrections where the cause and owner are obvious from quick inspection.
+
 ## The Iron Law
 
 ```
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ```
 
-If you haven't completed Phase 1, you cannot propose fixes.
+If this skill applies and you haven't completed Phase 1, you cannot propose fixes.
 
 ## When to Use
 
-Use for ANY technical issue:
+Use for technical issues where root cause is unknown, risk is nontrivial, or failed fixes would be costly:
+
 - Test failures
 - Bugs in production
-- Unexpected behavior
+- Regressions
+- Unexpected behavior without an obvious cause
 - Performance problems
 - Build failures
 - Integration issues
+- Data, security, authorization, tenancy, or cross-component problems
 
 **Use this ESPECIALLY when:**
 - Under time pressure (emergencies make guessing tempting)
@@ -38,10 +43,23 @@ Use for ANY technical issue:
 - Previous fix didn't work
 - You don't fully understand the issue
 
+## When Not To Use
+
+Do not invoke the full workflow for narrow, low-risk corrections where the cause is obvious after quick inspection:
+
+- Isolated CSS, spacing, color, copy, or truncation fixes.
+- Obvious typos, wrong import paths, misspelled identifiers, or one-line config mismatches.
+- User asks only for an explanation, review, or status and is not asking you to fix the issue.
+- Mechanical cleanup with no failing behavior.
+
+For these cases, still be concrete: inspect the owning file, identify the exact cause in plain language, make the scoped change, and verify the smallest useful thing.
+
 **Don't skip when:**
-- Issue seems simple (simple bugs have root causes too)
-- You're in a hurry (rushing guarantees rework)
-- Manager wants it fixed NOW (systematic is faster than thrashing)
+- The issue crosses components, services, data flow, auth, tenancy, persistence, build systems, CI, or external integrations.
+- The issue is reproducible but the cause is not obvious.
+- A quick inspection does not fully explain the symptom.
+- You're in a hurry (rushing guarantees rework).
+- Someone already tried a fix and it did not work.
 
 ## The Four Phases
 
@@ -246,7 +264,7 @@ If you catch yourself thinking:
 
 | Excuse | Reality |
 |--------|---------|
-| "Issue is simple, don't need process" | Simple issues have root causes too. Process is fast for simple bugs. |
+| "Issue is simple, don't need process" | Skip only for narrow low-risk corrections with an obvious cause. |
 | "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check thrashing. |
 | "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
 | "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |

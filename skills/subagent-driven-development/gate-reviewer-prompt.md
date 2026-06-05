@@ -28,6 +28,7 @@ Subagent dispatch:
     - Boundary failures: frontend-owned business rules, controllers owning domain logic, feature logic leaking into shared primitives, duplicate canonical helpers/components.
     - Structural regressions: spaghetti branching, copy-pasted logic, unnecessary wrappers, unjustified `any`/`unknown`/casts/optionality, files pushed past 1000 lines without a decomposition rationale.
     - Risky untested behavior: auth, tenant scope, lifecycle transitions, public-token flows, migrations, financial/document commands, or user-visible E2E workflows without meaningful tests.
+    - Unsupported verification claims: E2E, browser, public-link, API+DB, UX, provider-live, or full-stack behavior claimed without runtime preflight evidence for a migrated/queryable DB plus booted backend and frontend.
 
     Look for "code judo" opportunities only when they materially simplify the implementation: deleting branches, moving logic to its canonical owner, making type boundaries explicit, or decomposing a large/tangled file.
 

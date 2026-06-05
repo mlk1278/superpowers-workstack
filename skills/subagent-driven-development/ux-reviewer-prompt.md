@@ -88,6 +88,10 @@ Subagent dispatch (UX reviewer):
     started the dev server before dispatching you, but verify it's reachable
     before starting the pathway.]
 
+    The orchestrator must provide runtime preflight evidence for live UX review:
+    migrated/queryable database, booted backend, and booted frontend. If that
+    evidence is missing or the app is unreachable, report ⚠️ Pathway blocked.
+
     Use the browser-driving tooling required by the project and Required Skill.
     For FSMCRM, use the local `playwright-cli` skill and CLI commands; do not use
     Playwright MCP. If no browser tooling is available, report NO_BROWSER and stop.

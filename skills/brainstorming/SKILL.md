@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: Use when shaping a new or ambiguous feature, product idea, component design, workflow, or behavior change where user intent, scope, tradeoffs, or UX are not yet clear
 ---
 
 # Brainstorming Ideas Into Designs
@@ -10,44 +10,61 @@ Help turn ideas into fully formed designs and specs through natural collaborativ
 Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+When this skill applies, do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it.
 </HARD-GATE>
 
-## Anti-Pattern: "This Is Too Simple To Need A Design"
+## When To Use
 
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
+Use this skill when the work needs product or design discovery before implementation:
+
+- New features, workflows, pages, systems, or substantial components.
+- Ambiguous behavior changes where requirements, success criteria, or user intent are not clear.
+- Requests to explore options, compare approaches, design, plan, spec, or brainstorm.
+- Multi-step work where implementation choices affect architecture, data flow, user experience, or future maintenance.
+
+## When Not To Use
+
+Do not invoke this skill just because code will change. Skip it for:
+
+- Narrow user-directed edits with clear acceptance criteria.
+- Small copy, style, spacing, color, or CSS fixes.
+- Mechanical refactors, dependency bumps, generated code updates, or formatting.
+- Implementing an already-approved spec or plan.
+- Debugging a concrete failure where the question is root cause, not product direction.
+
+For these cases, use normal engineering judgment and the relevant domain skill if one applies.
 
 ## Checklist
 
-You MUST create a task for each of these items and complete them in order:
+For substantial brainstorming work, create a task for each of these items and complete them in order. For lightweight discovery, keep the same sequence but collapse obvious steps into concise discussion.
 
 1. **Explore project context** — check files, docs, recent commits (dispatch exploration subagents for anything beyond a couple of files; see "Dispatching Exploration Subagents" below)
-2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
-3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-4. **Propose 2-3 approaches** — with trade-offs and your recommendation
-5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+2. **Select brainstorming depth** — infer Technical Agent-Led, UX/Product Collaborative, or Lightweight; confirm only if ambiguous
+3. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
+4. **Ask clarifying questions** — one at a time, tuned to the selected depth
+5. **Propose 2-3 approaches** — with trade-offs and your recommendation
+6. **Present design** — in sections scaled to their complexity, get user approval after each section
+7. **Transition to writing-specs** — for substantial work, invoke `superpowers:writing-specs`
+8. **Transition to lightweight execution** — for narrow approved work, use the lightweight path in `superpowers:subagent-driven-development`
 
 ## Process Flow
 
 ```dot
 digraph brainstorming {
     "Explore project context" [shape=box];
+    "Select brainstorming depth" [shape=box];
     "Visual questions ahead?" [shape=diamond];
     "Offer Visual Companion\n(own message, no other content)" [shape=box];
     "Ask clarifying questions" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Spec self-review\n(fix inline)" [shape=box];
-    "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans skill" [shape=doublecircle];
+    "Substantial work?" [shape=diamond];
+    "Invoke writing-specs skill" [shape=doublecircle];
+    "Use lightweight execution path" [shape=doublecircle];
 
-    "Explore project context" -> "Visual questions ahead?";
+    "Explore project context" -> "Select brainstorming depth";
+    "Select brainstorming depth" -> "Visual questions ahead?";
     "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
     "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
     "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
@@ -55,21 +72,25 @@ digraph brainstorming {
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User approves design?" -> "Substantial work?" [label="yes"];
+    "Substantial work?" -> "Invoke writing-specs skill" [label="yes"];
+    "Substantial work?" -> "Use lightweight execution path" [label="no"];
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**For substantial work, the terminal state is invoking `writing-specs`.** Do NOT invoke frontend-design, mcp-builder, writing-plans, or any implementation skill while the brainstorming gate is active. The next skill after substantial brainstorming is `writing-specs`.
+
+For narrow, approved work that does not need a saved spec or implementation plan, exit this skill after user approval and use the lightweight execution path in `superpowers:subagent-driven-development`.
 
 ## The Process
 
 **Understanding the idea:**
 
 - Check out the current project state first (files, docs, recent commits)
+- Infer brainstorming depth from the request, and confirm only if ambiguous:
+  - **Technical Agent-Led:** the user is low-opinionated or asks for a technical feature; do heavier repo/domain exploration, propose a concrete design, and ask the user only about high-impact tradeoffs.
+  - **UX/Product Collaborative:** the work changes human-facing pages, workflows, or IA; ask deeper questions about pages involved, states, layout/template reuse, content, and interaction expectations, then propose options.
+  - **Lightweight:** the request is narrow and low-risk; ask only the minimum needed to lock acceptance criteria.
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
@@ -132,40 +153,26 @@ Failing to do this is the most common cause of context rot in planning sessions.
 - Ask for **raw findings plus a short conclusion**, not interpretation — interpretation is your job. Example: "List all controllers under `apps/api/src/modules/**` that import `@nestjs/passport`. Return `file:line` for each import and a one-line summary at the end of how many files match."
 - For sweep-style discovery the planner will paste into a plan, also ask for the exact `rg` / `grep` invocation the subagent used so the plan can include it as a re-runnable discovery command.
 
-**Effort level for exploration subagents:** default to medium effort. Low-effort exploration agents miss matches and stop early on grep-then-summarize tasks; high-effort wastes tokens on work that doesn't require judgment. Use the subagent dispatch available in your platform, such as a medium-effort GPT-5 Task subagent in Codex. The pattern is the same regardless of platform.
+**Effort level for exploration subagents:**
+
+- **Low effort:** simple Linear backlog scans, exact-match file lists, command/help lookups, or "return the top 10 likely related items" tasks where missing one obscure match is acceptable.
+- **Medium effort (default for code/docs exploration):** codebase pattern surveys, caller inventories, route/component ownership maps, cross-doc synthesis, and sweep target enumeration.
+- **High effort:** rare, only when the exploration requires judgment across ambiguous architecture/security/data boundaries. Prefer narrowing the task before escalating.
 
 This applies to brainstorming **and** to planning. The writing-plans skill references this section for planning-time exploration; treat it as canonical guidance for both phases.
 
 ## After the Design
 
-**Documentation:**
+**Substantial work:**
 
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-  - (User preferences for spec location override this default)
-- Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
+- Invoke `superpowers:writing-specs` to save a compact spec, run mandatory spec review, handle Linear/worktree metadata, and get approval before planning.
+- Do NOT invoke `writing-plans` directly from brainstorming for substantial work.
 
-**Spec Self-Review:**
-After writing the spec document, look at it with fresh eyes:
+**Lightweight work:**
 
-1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
-2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
-3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
-4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
-
-Fix any issues inline. No need to re-review — just fix and move on.
-
-**User Review Gate:**
-After the spec review loop passes, ask the user to review the written spec before proceeding:
-
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
-
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
-
-**Implementation:**
-
-- Invoke the writing-plans skill to create a detailed implementation plan
-- Do NOT invoke any other skill. writing-plans is the next step.
+- Keep the approved design inline.
+- Hand off to the lightweight execution path in `superpowers:subagent-driven-development`.
+- The lightweight path still requires clear acceptance criteria, TDD where meaningful, spec compliance review, code quality review, a verified commit, and clean status.
 
 ## Key Principles
 

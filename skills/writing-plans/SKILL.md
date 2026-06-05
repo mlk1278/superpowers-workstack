@@ -17,7 +17,7 @@ Assume the implementer is a **low-effort model on autopilot** — a developer wh
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+**Context:** This should run after `superpowers:writing-specs` for substantial work. Use the reviewed spec as the source of truth and create the implementation plan in the dedicated worktree/branch prepared for the ticket or feature.
 
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
@@ -26,11 +26,15 @@ Assume the implementer is a **low-effort model on autopilot** — a developer wh
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
+Before planning, confirm the spec was reviewed and approved. If the work has no saved spec because it is narrow/low-risk, use the lightweight execution path in `superpowers:subagent-driven-development` instead of writing a heavyweight plan.
+
 ## Exploration During Planning
 
 Don't burn your own context on discovery work. When mapping the file structure, identifying targets for a sweep task, surveying existing patterns to follow, or assessing cross-cutting impact, **dispatch an exploration subagent** and feed the distilled results into your planning. Your context is for design and task decomposition; the subagent's context absorbs the raw file reads. Failing to do this produces context-rotted plans where the second half of the document is noticeably worse than the first.
 
 The full pattern (when to dispatch, when to skip, how to prompt, effort level) lives in `superpowers:brainstorming` § Dispatching Exploration Subagents. That guidance applies verbatim during planning — re-read it if you haven't.
+
+Use low effort for simple backlog/doc/file-list lookups and medium effort for codebase pattern surveys, sweep target enumeration, and cross-doc synthesis. High effort is reserved for rare exploration that requires architecture/security/data judgment.
 
 This is especially important for sweep tasks (see "Sweep Tasks Need Enumeration"). The discovery command, enumerated target list, and "what's the existing pattern to follow" survey can all be produced by an exploration subagent and pasted into the task. The planner's job is to decide what counts as in-scope and to write down the completion predicate — not to read every file.
 
@@ -422,6 +426,10 @@ The orchestrator recognizes `**Type:** Quality Gate` and runs the Quality Gate f
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status:** Draft | Approved | In Progress | Complete
+**Spec:** `docs/superpowers/specs/YYYY-MM-DD-<ticket-or-topic>-spec.md`
+**Linear:** `<ISSUE-ID and URL, or None>`
+**Branch / Worktree:** `<branch>` at `<worktree-path>`
 **Goal:** [One sentence describing what this builds]
 
 **Architecture:** [2-3 sentences about approach]
@@ -434,6 +442,8 @@ The orchestrator recognizes `**Type:** Quality Gate` and runs the Quality Gate f
 ## Task Structure
 
 Every task SHOULD include `Goal`, `Files`, `Acceptance Criteria`, `Verify` (command + expected output), and `Steps`. Code blocks within steps are optional — include them per the "When To Include A Code Block" guidance below. For trivial tasks (e.g., a one-line config tweak), it's fine to collapse `Acceptance Criteria` and `Verify` into a single sentence, but don't drop them entirely.
+
+If a plan expects E2E, browser, public-link, API+DB, UX, provider-live, or full-stack verification, include a runtime preflight in the verification strategy: project-approved commands must prove the database is migrated/queryable, the backend boots against it, and the frontend boots with its configured API URL.
 
 ````markdown
 ### Task N: [Component Name]
@@ -618,13 +628,16 @@ If the answer to any is "no," fix the affected tasks before saving. **The Single
 
 **9. Quality gate placement check:** Every code-bearing plan needs a final Quality Gate task. Add milestone Quality Gates only after large/risky coherent slices where late feedback would be expensive. If the plan is docs-only or non-code, note why no Quality Gate is needed under `## Architecture`. Confirm each gate task is structured per the "Quality Gate Task Structure" guidance: surface defined, risk areas named, verification evidence specified, and out-of-scope debt listed.
 
+**10. Runtime verification check:** If any acceptance criterion depends on live app behavior, public links, browser UX, provider callbacks, or API+DB behavior, confirm the plan names the runtime preflight evidence needed before anyone can call that behavior verified. If live verification is impossible, the task must say what remains mock-scoped and what UAT/follow-up is required.
+
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
 ## Execution Handoff
 
-After saving the plan, hand off to `superpowers:subagent-driven-development` unless the user explicitly asks to stop:
+After saving the plan, stop for approval unless the user explicitly delegated plan approval:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Next step is subagent-driven development: implementation, spec review, code quality review, any UX gates, and the final Quality Gate."**
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Please review and approve it before execution. After approval, the next step is subagent-driven development: implementation, spec review, code quality review, any UX gates, and the final Quality Gate."**
 
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
 - Fresh subagent per task + two-stage review
+- Execution starts only after plan approval or explicit delegated approval.

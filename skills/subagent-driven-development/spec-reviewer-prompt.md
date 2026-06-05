@@ -60,6 +60,13 @@ Subagent dispatch (spec reviewer):
     - Did they keep public/authenticated surfaces, API contracts, tenant scope, and security-sensitive behavior aligned with the task text?
     - Did they add unrequested flags, modes, fallbacks, or optionality that change the intended contract?
 
+    **Verification scope:**
+    - If the implementer claims E2E, browser, public-link, API+DB, provider-live,
+      UX, or full-stack behavior is verified, did they provide runtime preflight
+      evidence for a migrated/queryable database plus booted backend and frontend?
+    - If verification used mocks only, require the report to say so; mocked tests
+      cannot satisfy live app or structural runtime acceptance criteria.
+
     **Verify by reading code, not by trusting report.**
 
     Report:

@@ -9,7 +9,7 @@ description: Use when implementation is complete, all tests pass, and you need t
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → confirm clean committed work → push or integrate → clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -37,7 +37,28 @@ Stop. Don't proceed to Step 2.
 
 **If tests pass:** Continue to Step 2.
 
-### Step 2: Determine Base Branch
+If the branch includes E2E, browser, public-link, API+DB, UX, provider-live, or full-stack verification claims, also confirm runtime preflight evidence before Step 2: migrated/queryable database, backend boot, and frontend boot. If preflight fails, report the blocker and do not present the branch as complete.
+
+### Step 2: Verify Git State
+
+Before presenting options, verify intended work is committed:
+
+```bash
+git status --short
+git log --oneline --decorate -5
+```
+
+If `git status --short` is not empty:
+
+```
+Worktree has uncommitted changes. I cannot finish this branch until they are committed or intentionally discarded.
+```
+
+Stop and resolve the dirty state before continuing. Do not offer merge/PR/keep/discard options while intended work is uncommitted.
+
+If the work is linked to Linear, confirm recent commit messages, branch name, and PR metadata include the ticket ID or document why not.
+
+### Step 3: Determine Base Branch
 
 ```bash
 # Try common base branches
@@ -46,7 +67,7 @@ git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 
 Or ask: "This branch split from main - is that correct?"
 
-### Step 3: Present Options
+### Step 4: Present Options
 
 Present exactly these 4 options:
 
@@ -63,7 +84,7 @@ Which option?
 
 **Don't add explanation** - keep options concise.
 
-### Step 4: Execute Choice
+### Step 5: Execute Choice
 
 #### Option 1: Merge Locally
 
@@ -84,7 +105,7 @@ git merge <feature-branch>
 git branch -d <feature-branch>
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Cleanup worktree (Step 6)
 
 #### Option 2: Push and Create PR
 
@@ -103,11 +124,17 @@ EOF
 )"
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Cleanup worktree (Step 6)
 
 #### Option 3: Keep As-Is
 
-Report: "Keeping branch <name>. Worktree preserved at <path>."
+Push before handoff unless the user explicitly wants a local-only branch:
+
+```bash
+git push -u origin <feature-branch>
+```
+
+Report: "Keeping branch <name>. Worktree preserved at <path>. Branch pushed to <remote-url>."
 
 **Don't cleanup worktree.**
 
@@ -131,9 +158,9 @@ git checkout <base-branch>
 git branch -D <feature-branch>
 ```
 
-Then: Cleanup worktree (Step 5)
+Then: Cleanup worktree (Step 6)
 
-### Step 5: Cleanup Worktree
+### Step 6: Cleanup Worktree
 
 **For Options 1, 2, 4:**
 
@@ -155,7 +182,7 @@ git worktree remove <worktree-path>
 |--------|-------|------|---------------|----------------|
 | 1. Merge locally | ✓ | - | - | ✓ |
 | 2. Create PR | - | ✓ | ✓ | - |
-| 3. Keep as-is | - | - | ✓ | - |
+| 3. Keep as-is | - | ✓ by default | ✓ | - |
 | 4. Discard | - | - | - | ✓ (force) |
 
 ## Common Mistakes
@@ -164,9 +191,21 @@ git worktree remove <worktree-path>
 - **Problem:** Merge broken code, create failing PR
 - **Fix:** Always verify tests before offering options
 
+**Treating mocked tests as live verification**
+- **Problem:** Branch is presented as E2E/full-stack verified while the DB, API, or web app cannot actually start
+- **Fix:** Require runtime preflight evidence for live verification claims, or label the result mock-scoped and create follow-up/UAT
+
 **Open-ended questions**
 - **Problem:** "What should I do next?" → ambiguous
 - **Fix:** Present exactly 4 structured options
+
+**Finishing with dirty changes**
+- **Problem:** Work remains only in the worktree and gets lost or missed in PR.
+- **Fix:** Require clean `git status --short` before presenting completion options.
+
+**Unpushed handoff branch**
+- **Problem:** User cannot inspect or recover the branch remotely.
+- **Fix:** Push for PR and keep-as-is paths unless the user explicitly requests local-only.
 
 **Automatic worktree cleanup**
 - **Problem:** Remove worktree when might need it (Option 2, 3)
@@ -180,12 +219,17 @@ git worktree remove <worktree-path>
 
 **Never:**
 - Proceed with failing tests
+- Present E2E/full-stack/browser behavior as verified without runtime preflight evidence
+- Present completion options with dirty uncommitted changes
+- Hand off an unpushed branch unless explicitly requested
 - Merge without verifying tests on result
 - Delete work without confirmation
 - Force-push without explicit request
 
 **Always:**
 - Verify tests before offering options
+- Verify clean git status before offering options
+- Push PR/keep-as-is branches by default
 - Present exactly 4 options
 - Get typed confirmation for Option 4
 - Clean up worktree for Options 1 & 4 only

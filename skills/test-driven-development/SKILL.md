@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing a new feature, meaningful behavior change, bug fix with observable behavior, risky refactor, or business/security/data rule
 ---
 
 # Test-Driven Development (TDD)
@@ -15,23 +15,30 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 ## When to Use
 
-**Always:**
-- New features
-- Bug fixes
-- Refactoring
-- Behavior changes
+Use TDD for changes where tests can define desired behavior and prevent meaningful regressions:
 
-**Exceptions (ask your human partner):**
+- New features
+- Bug fixes with observable behavior
+- Risky refactoring
+- Business rules, data rules, permissions, security, or cross-layer contracts
+- Meaningful behavior changes
+
+**Usually skip full TDD for:**
+- Copy, spacing, color, truncation, and simple layout tweaks
+- One-line typo/import/config corrections with an obvious cause
+- Pure formatting or generated code updates
 - Throwaway prototypes
 - Generated code
-- Configuration files
+- Configuration-only changes where validation is a command, not a unit test
 
-Thinking "skip TDD just this once"? Stop. That's rationalization.
+For skipped cases, run the smallest useful verification instead of creating a test harness. If the change starts to involve behavior, state, data, or regression risk, switch back to TDD.
+
+Thinking "skip TDD just this once" on a meaningful behavior change? Stop. That's rationalization.
 
 ## The Iron Law
 
 ```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+WHEN THIS SKILL APPLIES, NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
 Write code before the test? Delete it. Start over.
@@ -257,7 +264,7 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 
 | Excuse | Reality |
 |--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
+| "Too simple to test" | Valid only for presentation/mechanical tweaks with no behavior. Otherwise, test it. |
 | "I'll test after" | Tests passing immediately prove nothing. |
 | "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
 | "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |

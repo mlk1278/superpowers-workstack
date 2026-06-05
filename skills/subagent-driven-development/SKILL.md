@@ -5,7 +5,9 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching exactly three task agents per implementation task: one implementer, one spec reviewer, and one code quality auditor. Keep all three threads open until that task is approved. Review-only gate tasks, such as UX Gates and Quality Gates, use their specialized flows instead.
+Execute approved implementation plans by dispatching exactly three task agents per implementation task: one implementer, one spec reviewer, and one code quality auditor. Keep all three threads open until that task is approved. Review-only gate tasks, such as UX Gates and Quality Gates, use their specialized flows instead.
+
+For narrow work without a saved spec/plan, use the lightweight execution path below. Lightweight does not mean unreviewed: it still requires acceptance criteria, TDD where meaningful, spec compliance review, code quality review, a verified commit, clean status, and push before handoff.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
@@ -20,12 +22,16 @@ The implementer owns the code until both reviewers approve it. The spec reviewer
 ```dot
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
+    "Narrow approved work?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
     "subagent-driven-development" [shape=box];
+    "Lightweight execution path" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
-    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
+    "Have implementation plan?" -> "Narrow approved work?" [label="no"];
+    "Narrow approved work?" -> "Lightweight execution path" [label="yes"];
+    "Narrow approved work?" -> "Manual execution or brainstorm first" [label="no"];
     "Tasks mostly independent?" -> "subagent-driven-development" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
 }
@@ -60,11 +66,14 @@ digraph process {
     }
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
+    "Run runtime preflight if any task/gate will claim full-stack verification" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" [shape=box];
+    "Confirm branch pushed and worktree clean" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent ONCE (./implementer-prompt.md)";
+    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Run runtime preflight if any task/gate will claim full-stack verification";
+    "Run runtime preflight if any task/gate will claim full-stack verification" -> "Dispatch implementer subagent ONCE (./implementer-prompt.md)";
     "Dispatch implementer subagent ONCE (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Implementer subagent implements, tests, commits, self-reviews";
@@ -83,9 +92,38 @@ digraph process {
     "Mark task complete in TodoWrite and source plan" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent ONCE (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" [label="no"];
-    "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" -> "Use superpowers:finishing-a-development-branch";
+    "Confirm final Quality Gate passed\n(run fallback only if plan omitted it)" -> "Confirm branch pushed and worktree clean";
+    "Confirm branch pushed and worktree clean" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
+
+## Runtime Preflight For Full-Stack Claims
+
+Before dispatching agents that may claim E2E, browser, public-link, API+DB, UX, or full-stack verification, run the repo-approved startup checks. Discover commands from local docs/scripts; do not hardcode a global recipe.
+
+Minimum evidence:
+- Database is migrated and queryable, not merely port-reachable.
+- Backend boots against that database and a health/API request succeeds.
+- Frontend boots with its configured API URL and serves at least one route.
+
+Record the exact commands, result, and any temporary env overrides. If preflight fails, continue only with clearly scoped unit/mock/static verification, or fix the environment if that is in scope. Do not let implementers, UX reviewers, spec reviewers, quality reviewers, or final reports call live app behavior "verified" without this evidence.
+
+## Lightweight Execution Path
+
+Use this path only for narrow, low-risk work with approved inline requirements. If the task expands beyond one coherent change, stop and move to `writing-specs` + `writing-plans`.
+
+1. Write a short task brief in the conversation: goal, acceptance criteria, files likely touched, verification command, and out-of-scope boundaries.
+2. Use TDD when the behavior is observable or risky; skip TDD only for tiny copy/style/docs/config edits where a test would add no useful signal.
+3. Implement in the current branch/worktree only if it is appropriate for the work. For non-trivial work, use `superpowers:using-git-worktrees` first.
+4. Run the smallest meaningful verification.
+5. Commit the verified change. If Linear is attached, include the ticket ID in the commit message.
+6. Run spec compliance review against the task brief.
+7. Run code quality review after spec compliance passes.
+8. Fix reviewer findings, re-run verification, and amend or add follow-up commits.
+9. Confirm `git status --short` is clean.
+10. Push the branch before handoff unless the user explicitly asked to keep it local.
+
+Do not use this path to bypass a spec or implementation plan for multi-layer features, UX redesigns, security/data changes, migrations, or cross-cutting refactors.
 
 ## Thread Ownership
 
@@ -138,6 +176,16 @@ Use the first format that fits the existing plan:
 - Otherwise, add `**Status:** Completed` directly under the task heading.
 
 Do this before starting the next task so a fresh session can identify the next unfinished task from the plan alone.
+
+## Git Hygiene
+
+Each completed implementation task must leave a verified commit and a clean worktree.
+
+- Commit after each task's implementation, verification, spec review, and code quality review are complete.
+- Include the Linear ticket ID in commit messages when a ticket is attached. The first implementation commit on a ticket branch must start with or include the ticket ID.
+- Run `git status --short` before marking a task or gate complete. If anything is dirty, either commit it, explicitly revert only changes from the current task, or document why the task cannot be completed yet.
+- Push at milestone Quality Gates, after the final Quality Gate, and before any handoff or PR creation.
+- Do not report a task, gate, branch, or worktree as complete while intended changes are uncommitted.
 
 ## Model Selection
 
@@ -194,43 +242,49 @@ When extracting tasks up front, scan each task block for `**Type:** UX Gate`. UX
 ```dot
 digraph ux_gate {
     rankdir=TB;
-    "Resume implementer thread from prior task(s)" [shape=box];
+    "Build UX gate context bundle" [shape=box];
+    "Choose pathway generator\n(existing owner or fresh generator)" [shape=box];
     "Send: 'Generate N navigation pathways for this UX gate'" [shape=box];
-    "Implementer outputs pathways" [shape=box];
+    "Pathway generator outputs pathways" [shape=box];
     "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)" [shape=box];
     "All UX reviewers approve?" [shape=diamond];
     "Aggregate specific feedback (file:component:state-level)" [shape=box];
-    "Send aggregated feedback to SAME implementer via send_input" [shape=box];
+    "Route fixes to owner or focused fixer agents" [shape=box];
+    "Regenerate pathways from updated diff" [shape=box];
     "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" [shape=box];
-    "Mark UX gate complete in TodoWrite and source plan" [shape=box];
+    "Confirm clean status and mark UX gate complete" [shape=box];
 
-    "Resume implementer thread from prior task(s)" -> "Send: 'Generate N navigation pathways for this UX gate'";
-    "Send: 'Generate N navigation pathways for this UX gate'" -> "Implementer outputs pathways";
-    "Implementer outputs pathways" -> "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)";
+    "Build UX gate context bundle" -> "Choose pathway generator\n(existing owner or fresh generator)";
+    "Choose pathway generator\n(existing owner or fresh generator)" -> "Send: 'Generate N navigation pathways for this UX gate'";
+    "Send: 'Generate N navigation pathways for this UX gate'" -> "Pathway generator outputs pathways";
+    "Pathway generator outputs pathways" -> "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)";
     "Dispatch one UX reviewer subagent per pathway IN PARALLEL (./ux-reviewer-prompt.md)" -> "All UX reviewers approve?";
     "All UX reviewers approve?" -> "Aggregate specific feedback (file:component:state-level)" [label="no"];
-    "Aggregate specific feedback (file:component:state-level)" -> "Send aggregated feedback to SAME implementer via send_input";
-    "Send aggregated feedback to SAME implementer via send_input" -> "Send: 'Generate N navigation pathways for this UX gate'" [label="implementer fixes, regenerate pathways"];
+    "Aggregate specific feedback (file:component:state-level)" -> "Route fixes to owner or focused fixer agents";
+    "Route fixes to owner or focused fixer agents" -> "Regenerate pathways from updated diff";
+    "Regenerate pathways from updated diff" -> "Pathway generator outputs pathways";
     "All UX reviewers approve?" -> "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" -> "Mark UX gate complete in TodoWrite and source plan";
+    "Dispatch code quality reviewer on UX-gate diff (./code-quality-reviewer-prompt.md)" -> "Confirm clean status and mark UX gate complete";
 }
 ```
 
 **Step-by-step:**
 
-1. **Resume the implementer thread** from the most recent task that built code in the surface under review. The implementer already has the relevant files and decisions in context. Do **not** spawn a fresh implementer; this is the same persistent thread as the prior implementation task(s).
-2. **Ask the implementer to generate pathways.** Send via `send_input`:
+1. **Build the UX gate context bundle.** Gather the gate task, routes/components under review, design intent, template references, task numbers, base/head commits, and summaries from all implementation tasks that contributed to the surface. Do not assume one prior implementer has the full context when multiple tasks built the surface.
+2. **Choose a pathway generator.** If one still-open implementer clearly owns the whole surface, send the bundle to that thread. If ownership is spread across tasks or threads are closed, spawn a fresh medium-effort pathway generator with the bundle. The generator produces pathways only; it does not review or write code.
+3. **Ask the pathway generator to generate pathways.** Send:
    > "We are now in a UX Gate for \[surface]. Review the actual diff you produced against the design intent, the template-pattern references, the UX acceptance criteria, and any Required Skill from the gate task. Then generate \[N=5–10] navigation pathways for UX review. Each pathway is a numbered, ordered list of concrete UI actions a fresh browser session should perform (URL to load, clicks, form fills, hover states, keyboard nav, viewport changes). Across the pathway set, cover mobile, tablet, desktop, and very large desktop viewports unless explicitly out of scope. Each pathway should target a distinct concern (empty state, populated state, create flow, edit flow, error state, responsive breakpoint, dark mode, keyboard nav, etc.). Report only the pathway list. Do not start any review yourself."
-3. **Dispatch UX reviewers in parallel** — one ephemeral subagent per pathway, each in a *fresh session* using `./ux-reviewer-prompt.md`. Include the gate task's `**Required Skill:**` block in every reviewer prompt. Do not reuse UX reviewer threads across pathways or across loop iterations; freshness is the whole point.
-4. **Aggregate UX feedback.** UX reviewers return specific, actionable findings (file:component:state-level — e.g., "`apps/web/components/.../customer-card.tsx`: empty-state copy is bottom-aligned in screenshot; design asset has it center-aligned"). Aggregate findings across reviewers, deduplicate, and group by component/concern.
-5. **Send aggregated feedback to the same implementer thread** via `send_input` with: "UX reviewers returned the following specific findings. Fix them, then commit. Do not regenerate pathways yet — wait for instruction." After the implementer commits the fixes, send the next instruction: "Now regenerate pathways based on the updated implementation."
-6. **Loop steps 3–5** until UX reviewers approve. UX reviewer iterations are expected; do not escalate on the first round.
-7. **Dispatch the code quality reviewer** on the *entire UX-gate diff* (from the gate's first fix commit through the last). This catches over-engineering or sloppy fixes introduced during the UX loop.
-8. **Mark the UX gate task complete** in TodoWrite and the source plan.
+4. **Dispatch UX reviewers in parallel** — one ephemeral subagent per pathway, each in a *fresh session* using `./ux-reviewer-prompt.md`. Include the gate task's `**Required Skill:**` block in every reviewer prompt. Do not reuse UX reviewer threads across pathways or across loop iterations; freshness is the whole point.
+5. **Aggregate UX feedback.** UX reviewers return specific, actionable findings (file:component:state-level — e.g., "`apps/web/components/.../customer-card.tsx`: empty-state copy is bottom-aligned in screenshot; design asset has it center-aligned"). Aggregate findings across reviewers, deduplicate, and group by component/concern.
+6. **Route UX fixes to the right owner.** Send findings to the still-open implementer that owns the affected surface if one exists. If ownership is spread across tasks or threads are closed, spawn focused fixer agent(s) with disjoint write scopes. Require fixes to commit and report verification.
+7. **Regenerate pathways after fixes.** Send the updated diff/context back to the pathway generator or spawn a fresh generator if its context is stale. Pathways must reflect the current implementation.
+8. **Loop steps 4–7** until UX reviewers approve. UX reviewer iterations are expected; do not escalate on the first round.
+9. **Dispatch the code quality reviewer** on the *entire UX-gate diff* (from the gate's first fix commit through the last). This catches over-engineering or sloppy fixes introduced during the UX loop.
+10. **Confirm clean status and mark the UX gate task complete** in TodoWrite and the source plan.
 
 ### Pathway Discipline
 
-- **Pathways are generated at runtime, not specified in the plan.** The plan provides UX acceptance criteria, design references, and optional coverage hints; the implementer generates the actual pathway list because implementations drift from plans and the implementer has the actual code in context.
+- **Pathways are generated at runtime, not specified in the plan.** The plan provides UX acceptance criteria, design references, and optional coverage hints; the pathway generator uses the actual implementation diff because implementations drift from plans.
 - **Each pathway runs in a fresh session.** Reusing browser sessions across pathways causes false positives (cookies, auth state, dirty form state) and false negatives (the reviewer "remembers" the page rendered correctly).
 - **Pathways are regenerated each loop iteration.** The implementation has changed since the prior pathway list was generated, so new affordances or regressed states need fresh enumeration. The cost is one extra implementer turn per loop, which is cheaper than missing a regression.
 - **Responsive coverage is required.** For frontend UI gates, the pathway set must cover mobile, tablet, desktop, and very large desktop viewports unless the gate task explicitly excludes one.
@@ -415,6 +469,8 @@ Done!
 - **Start code quality review before spec compliance is ✅** (wrong order)
 - Move to next task while either review has open issues
 - Skip the final Quality Gate for code-bearing plans. If the plan omitted it, run a fallback final gate and report the plan gap.
+- Mark a task or gate complete with dirty uncommitted intended changes
+- Skip required milestone/final branch pushes before handoff
 - Treat a Quality Gate as a nit/style review instead of a production-readiness gate
 - Spawn broad overlapping fixer agents for Quality Gate findings; split by clear ownership or reuse the responsible implementer thread
 

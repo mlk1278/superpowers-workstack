@@ -53,6 +53,8 @@ git diff {BASE_SHA}..{HEAD_SHA}
 - Integration tests where needed?
 - All tests passing?
 - Risky security, data, lifecycle, or contract behavior tested at the owning layer?
+- Any E2E/browser/API+DB/full-stack verification claim backed by runtime
+  preflight evidence: migrated/queryable DB, backend boot, and frontend boot?
 
 **Requirements:**
 - All plan requirements met?
