@@ -140,7 +140,8 @@ Subagent dispatch (implementer):
     receive this — generate pathways only.
 
     If the follow-up includes a Required Skill, load and follow that skill before
-    generating pathways. For FSMCRM frontend UI, `fsmcrm-frontend-work` is required.
+    generating pathways. If the repo provides project-specific frontend skills or
+    instructions, load and follow the relevant frontend guidance.
 
     A **navigation pathway** is a numbered, ordered list of concrete UI actions a
     fresh browser session should perform to exercise one specific concern of the

@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: Use before claiming substantive code-bearing work is complete, before commits or PRs, or when verification evidence is complex, easy to overstate, or previously disputed
 ---
 
 # Verification Before Completion
@@ -13,18 +13,32 @@ Claiming work is complete without verification is dishonesty, not efficiency.
 
 **Violating the letter of this rule is violating the spirit of this rule.**
 
+This skill is for cases where verification is nontrivial, easy to overstate, or important to audit. It is not required for small mechanical edits where the verification is obvious and local.
+
+## Fast Path
+
+Do not load the full workflow for small mechanical edits where direct verification is enough:
+
+- Typo, copy, or wording-only changes
+- Narrow text replacements
+- One-file formatting or metadata edits
+- Searches confirming absence/presence of a string
+- Other changes where the verification command is obvious and local
+
+For these cases, run the smallest useful verification directly and report it plainly.
+
 ## The Iron Law
 
 ```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
+WHEN THIS SKILL APPLIES, NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 
-If you haven't run the verification command in this message, you cannot claim it passes.
+If this skill applies and you haven't run the verification command in this message, you cannot claim it passes.
 
 ## The Gate Function
 
 ```
-BEFORE claiming any status or expressing satisfaction:
+WHEN THIS SKILL APPLIES, before claiming any status or expressing satisfaction:
 
 1. IDENTIFY: What command proves this claim?
 2. RUN: Execute the FULL command (fresh, complete)
@@ -58,7 +72,7 @@ Skip any step = lying, not verifying
 - Relying on partial verification
 - Thinking "just this once"
 - Tired and wanting work over
-- **ANY wording implying success without having run verification**
+- **ANY wording implying substantive success without having run verification**
 
 ## Rationalization Prevention
 
@@ -116,19 +130,21 @@ From 24 failure memories:
 
 ## When To Apply
 
-**ALWAYS before:**
-- ANY variation of success/completion claims
-- ANY expression of satisfaction
-- ANY positive statement about work state
+Use the full skill before:
+- Substantive code-bearing completion claims
+- Claims that tests, lint, builds, migrations, E2E, browser QA, provider-live behavior, or full-stack behavior pass
+- Claims that a bug, regression, or user-visible issue is fixed
 - Committing, PR creation, task completion
-- Moving to next task
-- Delegating to agents
+- Moving to the next task in a multi-task plan
+- Trusting delegated agent results
 
 **Rule applies to:**
 - Exact phrases
 - Paraphrases and synonyms
 - Implications of success
-- ANY communication suggesting completion/correctness
+- Any communication suggesting substantive completion/correctness
+
+For small mechanical edits, do not invoke the full skill. Still verify directly before making a claim.
 
 ## The Bottom Line
 

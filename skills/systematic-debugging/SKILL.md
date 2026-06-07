@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when fixing a nontrivial bug, failing test/build, regression, performance issue, integration problem, or unexpected behavior whose root cause is not already clear
+description: Use when fixing a nontrivial bug, failing test/build, regression, performance issue, integration problem, or unexpected behavior whose root cause remains unclear after initial inspection
 ---
 
 # Systematic Debugging
@@ -14,6 +14,8 @@ Random fixes waste time and create new bugs. Quick patches mask underlying issue
 **Violating the letter of this process is violating the spirit of debugging.**
 
 This skill is for real debugging work. It is not required for every mention of the word "bug" or for narrow, low-risk corrections where the cause and owner are obvious from quick inspection.
+
+Initial inspection is allowed before invoking the full workflow. It is fine to read the error, inspect the owning file, and check the obvious local cause. If that fully explains the issue and the fix is narrow, proceed directly and verify the smallest useful command.
 
 ## The Iron Law
 
@@ -36,6 +38,8 @@ Use for technical issues where root cause is unknown, risk is nontrivial, or fai
 - Integration issues
 - Data, security, authorization, tenancy, or cross-component problems
 
+Invoke the full workflow when the first-pass explanation is incomplete, the issue crosses boundaries, or the cost of a wrong fix is high.
+
 **Use this ESPECIALLY when:**
 - Under time pressure (emergencies make guessing tempting)
 - "Just one quick fix" seems obvious
@@ -52,7 +56,7 @@ Do not invoke the full workflow for narrow, low-risk corrections where the cause
 - User asks only for an explanation, review, or status and is not asking you to fix the issue.
 - Mechanical cleanup with no failing behavior.
 
-For these cases, still be concrete: inspect the owning file, identify the exact cause in plain language, make the scoped change, and verify the smallest useful thing.
+For these cases, still be concrete: inspect the owning file, identify the exact cause in plain language, make the scoped change, and verify the smallest useful thing. Do not load the full workflow just to restate that habit.
 
 **Don't skip when:**
 - The issue crosses components, services, data flow, auth, tenancy, persistence, build systems, CI, or external integrations.

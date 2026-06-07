@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: Use when starting a conversation or choosing whether specialized skills apply to the current user request
+description: Use when the user explicitly asks about Superpowers skill selection, or when a complex or ambiguous task may require choosing among multiple specialized skills
 ---
 
 <SUBAGENT-STOP>
@@ -8,9 +8,11 @@ If you were dispatched as a subagent to execute a specific task, skip this skill
 </SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
-Use skills when their trigger clearly matches the user's request or the user names the skill.
+Use skills when their trigger clearly matches the user's request or the user explicitly asks to use them.
 
 Do not invoke skills purely as a defensive ritual. If a task is small, direct, and outside a skill's stated trigger, proceed with normal engineering judgment.
+
+Do not load this skill just because a session started. Use it when skill selection itself is uncertain, important, or explicitly requested.
 
 If a skill applies to the task, use it. If you invoke a skill and it turns out to be the wrong fit, say so briefly and continue without forcing its workflow.
 </EXTREMELY-IMPORTANT>
@@ -43,12 +45,16 @@ Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-too
 
 ## The Rule
 
-**Invoke named skills and clearly relevant skills before substantive work.** Match the user's request to the skill descriptions. Skills are tools for situations that need their workflow, not mandatory overhead for every adjacent keyword.
+**Invoke explicitly requested skills and clearly relevant skills before substantive work.** Match the user's request to the skill descriptions. Skills are tools for situations that need their workflow, not mandatory overhead for every adjacent keyword.
+
+Mentioning a skill is not always a request to invoke it. If the user is discussing skill design, repo content, trigger policy, or wording, inspect only the needed files unless they explicitly ask you to use that skill's workflow.
+
+For simple, mechanical, or clearly scoped tasks, proceed with normal engineering judgment. Use this skill only when skill selection itself changes what you would do.
 
 ```dot
 digraph skill_flow {
     "User message received" [shape=doublecircle];
-    "Skill named by user?" [shape=diamond];
+    "User explicitly asked to use/load a skill?" [shape=diamond];
     "Clear trigger match?" [shape=diamond];
     "Invoke Skill tool" [shape=box];
     "Announce: 'Using [skill] to [purpose]'" [shape=box];
@@ -57,9 +63,9 @@ digraph skill_flow {
     "Follow skill exactly" [shape=box];
     "Respond (including clarifications)" [shape=doublecircle];
 
-    "User message received" -> "Skill named by user?";
-    "Skill named by user?" -> "Invoke Skill tool" [label="yes"];
-    "Skill named by user?" -> "Clear trigger match?" [label="no"];
+    "User message received" -> "User explicitly asked to use/load a skill?";
+    "User explicitly asked to use/load a skill?" -> "Invoke Skill tool" [label="yes"];
+    "User explicitly asked to use/load a skill?" -> "Clear trigger match?" [label="no"];
     "Clear trigger match?" -> "Invoke Skill tool" [label="yes"];
     "Clear trigger match?" -> "Respond (including clarifications)" [label="no"];
     "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
@@ -72,19 +78,19 @@ digraph skill_flow {
 
 ## Red Flags
 
-These thoughts mean STOP if the request clearly matches a skill's trigger:
+These thoughts mean STOP if the request clearly matches a skill's trigger and the task is complex enough for the workflow to matter:
 
 | Thought | Reality |
 |---------|---------|
-| "The user named this skill, but I can skip reading it" | Named skills must be read. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "The trigger matches, but I can check git/files quickly" | Skills may define how to inspect state. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If the trigger clearly matches, use it. |
+| "The user explicitly asked me to use this skill, but I can skip reading it" | Explicitly requested skills must be read. |
+| "I need more context first" | If a workflow clearly applies, skill check comes before open-ended exploration. |
+| "Let me explore the codebase first" | If exploration strategy is part of the workflow, check first. |
+| "The trigger matches, but I can check git/files quickly" | For substantive work, skills may define how to inspect state. |
+| "Let me gather information first" | For complex tasks, skills may define how to gather information. |
+| "This doesn't need a formal skill" | If the trigger clearly matches and the workflow would change your approach, use it. |
 | "I remember this skill" | Skills evolve. Read current version. |
-| "The skill is overkill" | Only skip when the task is genuinely outside the trigger. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
+| "The skill is overkill" | Skip only when the task is small/mechanical or genuinely outside the trigger. |
+| "I'll just do this one thing first" | For substantive workflow-driven work, check before doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
 
@@ -104,7 +110,7 @@ When multiple skills could apply, use this order:
 
 ## Skill Types
 
-**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
+**Rigid** (TDD, debugging): Once the skill applies, follow exactly. Don't adapt away discipline.
 
 **Flexible** (patterns): Adapt principles to context.
 
@@ -112,4 +118,4 @@ The skill itself tells you which.
 
 ## User Instructions
 
-Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows when a skill clearly applies and would materially change the approach.

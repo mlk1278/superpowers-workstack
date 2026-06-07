@@ -12,11 +12,10 @@ This is the persistent quality auditor for Task N; re-review updates in the same
 Subagent dispatch (code quality reviewer):
   Use template at requesting-code-review/code-reviewer.md
 
-  WHAT_WAS_IMPLEMENTED: [from implementer's report]
+  DESCRIPTION: [task summary, from implementer's report]
   PLAN_OR_REQUIREMENTS: Task N from [plan-file]
   BASE_SHA: [commit before task]
   HEAD_SHA: [current commit]
-  DESCRIPTION: [task summary]
 ```
 
 **In addition to standard code quality concerns, the reviewer should check:**

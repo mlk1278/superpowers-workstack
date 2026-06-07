@@ -280,7 +280,7 @@ A **UX Gate** is a special review-only task that fires up a browser-driven UX re
 
 **UX gates are expensive.** They spawn a pathway-generation phase, multiple parallel browser-driven reviewers (one per pathway, each fresh), and an additional implementer fix loop. Use them strategically — never per-task, never as a default. The orchestrator's `superpowers:subagent-driven-development` skill describes the runtime mechanics; your job here is to decide *whether* and *where* to insert one.
 
-For FSMCRM frontend UI work, every UX gate task must require the `fsmcrm-frontend-work` skill. That skill is the source of truth for UI composition, frontend-review behavior, responsive expectations, and browser visual QA protocol.
+For frontend UI work in a repo that provides project-specific frontend skills or instructions, every UX gate task must require reviewers and implementers to load and follow the relevant repo-specific frontend guidance before reviewing or changing UI.
 
 ### When To Insert A UX Gate
 
@@ -321,7 +321,7 @@ A UX gate is a **review task**, not an implementation task. It does not write co
 
 **Goal:** Validate that the [surface] built in Tasks [X-Y] renders correctly, matches the supplied design intent, and follows the template/pattern of [reference page]. Catch rendering breaks, template drift, ad-hoc styling, and broken interactive states before merge.
 
-**Required Skill:** UX reviewers and any implementer handling UX findings must use `fsmcrm-frontend-work` before reviewing or changing FSMCRM frontend UI.
+**Required Skill:** UX reviewers and any implementer handling UX findings must load and follow any relevant repo-specific frontend skills or instructions before reviewing or changing frontend UI.
 
 **Surface Under Review:**
 - Routes / URLs: `/path/one`, `/path/two/[id]`

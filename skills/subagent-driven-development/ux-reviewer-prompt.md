@@ -17,7 +17,8 @@ Subagent dispatch (UX reviewer):
     re-invoked.
 
     If this prompt includes a Required Skill, load and follow it before reviewing.
-    For FSMCRM frontend UI, `fsmcrm-frontend-work` is required.
+    If the repo provides project-specific frontend skills or instructions, load
+    and follow the relevant frontend guidance.
 
     ## Surface Under Review
 
@@ -25,8 +26,9 @@ Subagent dispatch (UX reviewer):
 
     ## Required Skill
 
-    [Paste the UX gate task's Required Skill block, if present. For FSMCRM frontend
-    UI, this must be: "Use `fsmcrm-frontend-work` before reviewing."]
+    [Paste the UX gate task's Required Skill block, if present. For repos with
+    project-specific frontend skills or instructions, this should require loading
+    and following the relevant frontend guidance before reviewing.]
 
     ## Your Pathway
 

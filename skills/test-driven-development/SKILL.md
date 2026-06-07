@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing a new feature, meaningful behavior change, bug fix with observable behavior, risky refactor, or business/security/data rule
+description: Use when implementing nontrivial observable behavior, a bug fix with regression risk, risky refactor, or business/security/data rule
 ---
 
 # Test-Driven Development (TDD)
@@ -13,15 +13,19 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
+This skill is for changes where the test-first workflow affects correctness. It is not a mandate to build elaborate test harnesses for simple edits.
+
 ## When to Use
 
 Use TDD for changes where tests can define desired behavior and prevent meaningful regressions:
 
-- New features
+- New features with behavior worth protecting
 - Bug fixes with observable behavior
 - Risky refactoring
 - Business rules, data rules, permissions, security, or cross-layer contracts
 - Meaningful behavior changes
+
+For small behavior changes, TDD can be one focused failing test in an existing test file. Do not turn a simple regression assertion into a broad harness-building project.
 
 **Usually skip full TDD for:**
 - Copy, spacing, color, truncation, and simple layout tweaks
@@ -30,6 +34,7 @@ Use TDD for changes where tests can define desired behavior and prevent meaningf
 - Throwaway prototypes
 - Generated code
 - Configuration-only changes where validation is a command, not a unit test
+- Straightforward changes where an existing test command already covers the behavior and adding a new test would not improve regression confidence
 
 For skipped cases, run the smallest useful verification instead of creating a test harness. If the change starts to involve behavior, state, data, or regression risk, switch back to TDD.
 

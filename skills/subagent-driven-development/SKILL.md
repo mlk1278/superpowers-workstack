@@ -17,6 +17,8 @@ For narrow work without a saved spec/plan, use the lightweight execution path be
 
 The implementer owns the code until both reviewers approve it. The spec reviewer owns spec compliance for the task. The quality auditor owns quality review for the task. If either reviewer requests changes, send the feedback to the same implementer thread with `send_input`; after the implementer fixes it, send the updated commit/context back to the same reviewer thread with `send_input`. If your platform calls this resume/follow-up instead of `send_input`, use that. Do not spawn replacement agents for review loops.
 
+**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+
 ## When to Use
 
 ```dot
@@ -231,7 +233,7 @@ Task agents may report these statuses. Handle each appropriately:
 
 Some plans contain a **UX Gate** task — a special review-only task marked `**Type:** UX Gate` that fires up a browser-driven UX reviewer loop after substantive frontend work. UX gates exist to catch failures that nothing else catches: pages that don't render, layouts that drift from the design system, ad-hoc styling that contradicts an established template, and broken interactive states. The planner decides *whether and where* to insert UX gates (see `superpowers:writing-plans` § "UX Gates"); your job is to execute them correctly.
 
-If a UX gate task names a `**Required Skill:**`, include that instruction in the pathway-generation follow-up and in every UX reviewer prompt. For FSMCRM frontend UI, `fsmcrm-frontend-work` is required for UX gates and frontend-review agents.
+If a UX gate task names a `**Required Skill:**`, include that instruction in the pathway-generation follow-up and in every UX reviewer prompt. For repos with project-specific frontend skills or instructions, UX gates should require reviewers and implementers to load and follow the relevant repo-specific frontend guidance.
 
 ### Recognizing A UX Gate Task
 
@@ -509,7 +511,7 @@ Done!
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:requesting-code-review** - Code review template for reviewer subagents
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
