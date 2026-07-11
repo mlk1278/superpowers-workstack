@@ -38,7 +38,7 @@ For these cases, use normal engineering judgment and the relevant domain skill i
 
 For substantial brainstorming work, create a task for each of these items and complete them in order. For lightweight discovery, keep the same sequence but collapse obvious steps into concise discussion.
 
-1. **Explore project context** — check files, docs, recent commits (dispatch exploration subagents for anything beyond a couple of files; see "Dispatching Exploration Subagents" below)
+1. **Explore project context** — check files, docs, recent commits (dispatch exploration subagents for anything beyond a couple of files; see "Dispatching Exploration Subagents" below). Under-exploring is the common failure mode, not over-exploring: explore before asking the first clarifying question, and keep dispatching as answers surface new unknowns
 2. **Select brainstorming depth** — infer Technical Agent-Led, UX/Product Collaborative, or Lightweight; confirm only if ambiguous
 3. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
 4. **Ask clarifying questions** — one at a time, tuned to the selected depth
@@ -96,6 +96,7 @@ For narrow, approved work that does not need a saved spec or implementation plan
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
+- Exploration continues through the Q&A: when an answer names a page, flow, or subsystem you haven't verified, dispatch another exploration subagent with a more specific prompt instead of relying on assumptions about it
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
@@ -130,6 +131,8 @@ For narrow, approved work that does not need a saved spec or implementation plan
 Your context is for design judgment, not for absorbing raw source code. When the exploration step requires more than a couple of files — reading several docs, surveying every module for a pattern, finding all callers of a function, mapping cross-cutting concerns, building an inventory of existing components — **dispatch a dedicated exploration subagent** instead of doing the reads in your own context. The subagent's context absorbs the file-reading noise; you receive only the distilled answer.
 
 Failing to do this is the most common cause of context rot in planning sessions. A planner that reads 30 files inline before designing anything starts the design with a degraded context window and worse judgment than one that delegated the reads.
+
+When in doubt, dispatch. The skip cases below are narrow exceptions, not an invitation to explore manually — an exploration subagent is cheap relative to a design built on unverified assumptions about the codebase. If you reach the approach-proposal step still guessing how the existing system works, exploration was skipped. Exploration is also not a one-shot first step: dispatch again whenever clarifying answers or design discussion surface code, flows, or constraints you haven't mapped.
 
 **Dispatch an exploration subagent when:**
 
