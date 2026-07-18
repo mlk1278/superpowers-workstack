@@ -230,6 +230,10 @@ assert_failure "unknown role has no route" \
   "no route found for role 'unknown'" \
   --project-root "$tmp/empty" --role unknown
 
+assert_failure "missing project root" \
+  "project root is not a directory: $tmp/missing" \
+  --project-root "$tmp/missing" --role implementer
+
 assert_failure "parallel slice maximum" \
   "requested 5 parallel slices exceeds configured maximum 4" \
   --project-root "$tmp/project" --role implementer --parallel-slices 5

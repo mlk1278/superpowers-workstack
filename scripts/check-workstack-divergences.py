@@ -53,7 +53,7 @@ def main() -> int:
                 "diff",
                 "--name-only",
                 "--no-renames",
-                "--diff-filter=MD",
+                "--diff-filter=MDT",
                 baseline,
                 args.ref,
                 "--",

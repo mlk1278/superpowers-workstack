@@ -6,7 +6,7 @@
 
 **Plan owner:** Top-level WorkStack workflow orchestrator
 
-**Primary specification:** `/home/mkirk/projects/fsmcrm/docs/superpowers/specs/2026-07-18-workstack-development-workflow-spec.md`
+**Primary specification:** `docs/superpowers/specs/2026-07-18-workstack-development-workflow-spec.md`
 
 **Linear tickets:** None assigned. Do not invent ticket IDs; add real IDs when this work is represented in Linear.
 

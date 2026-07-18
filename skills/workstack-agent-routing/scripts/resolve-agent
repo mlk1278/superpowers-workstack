@@ -402,6 +402,8 @@ def main() -> int:
         raise RoutingError("--parallel-slices must be a positive integer")
     if args.reviewer_specialty and args.role != "reviewer":
         raise RoutingError("--reviewer-specialty is valid only for the reviewer role")
+    if not args.project_root.is_dir():
+        raise RoutingError(f"project root is not a directory: {args.project_root}")
 
     skill_root = Path(__file__).resolve().parent.parent
     bundled = validate_config(parse_yaml(skill_root / "defaults.yaml"), "bundled defaults")
