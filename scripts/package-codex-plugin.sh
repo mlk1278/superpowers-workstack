@@ -260,8 +260,12 @@ while IFS= read -r skill_dir; do
   skill_name="${skill_dir##*/}"
   metadata_file="$METADATA_ROOT/skills/$skill_name/agents/openai.yaml"
 
+  if [[ -f "$skill_dir/agents/openai.yaml" ]]; then
+    continue
+  fi
+
   if [[ ! -f "$metadata_file" ]]; then
-    echo "Missing OpenAI agent metadata for skill: $skill_name" >&2
+    echo "Missing OpenAI agent metadata for skill: $skill_name (not committed in source and absent from metadata source)" >&2
     missing_metadata=1
     continue
   fi
@@ -271,7 +275,7 @@ while IFS= read -r skill_dir; do
 done < <(find "$STAGE/skills" -mindepth 1 -maxdepth 1 -type d -print | sort)
 
 if [[ "$missing_metadata" -ne 0 ]]; then
-  die "metadata source is incomplete"
+  die "OpenAI agent metadata is unavailable from committed source or metadata source"
 fi
 
 skill_count="$(find "$STAGE/skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"

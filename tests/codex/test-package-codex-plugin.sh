@@ -122,6 +122,9 @@ write_metadata_fixture() {
   local skill
 
   while IFS= read -r skill; do
+    if [[ "$skill" == "workstack-agent-routing" ]]; then
+      continue
+    fi
     mkdir -p "$destination/skills/$skill/agents"
     cat >"$destination/skills/$skill/agents/openai.yaml" <<EOF
 interface:
@@ -168,8 +171,16 @@ assert_not_matches "$archive_paths" "$unexpected_pattern" "archive excludes sour
 assert_contains "$archive_paths" ".codex-plugin/plugin.json" "archive includes Codex manifest"
 assert_contains "$archive_paths" "skills/brainstorming/SKILL.md" "archive includes skills"
 assert_contains "$archive_paths" "skills/brainstorming/agents/openai.yaml" "archive includes OpenAI skill metadata"
+assert_contains "$archive_paths" "skills/workstack-agent-routing/SKILL.md" "archive includes WorkStack routing skill"
+assert_contains "$archive_paths" "skills/workstack-agent-routing/defaults.yaml" "archive includes WorkStack routing defaults"
+assert_contains "$archive_paths" "skills/workstack-agent-routing/scripts/resolve-agent" "archive includes WorkStack routing resolver"
+assert_contains "$archive_paths" "skills/workstack-agent-routing/agents/openai.yaml" "archive includes committed WorkStack routing metadata"
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
 assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
+
+packaged_workstack_metadata="$(read_archive_file "$archive" skills/workstack-agent-routing/agents/openai.yaml)"
+committed_workstack_metadata="$(git -C "$REPO_ROOT" show HEAD:skills/workstack-agent-routing/agents/openai.yaml)"
+assert_equals "$packaged_workstack_metadata" "$committed_workstack_metadata" "committed WorkStack routing metadata is retained without an external fixture entry"
 
 manifest_summary="$(read_archive_file "$archive" .codex-plugin/plugin.json | python3 -c 'import json,sys; data=json.load(sys.stdin); print("\t".join([data["name"], data["version"], data["skills"], str(data.get("hooks"))]))')"
 expected_version="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json"))["version"])')"
@@ -183,6 +194,12 @@ if [[ -x "$extracted/skills/subagent-driven-development/scripts/task-brief" ]]; 
   pass "archive preserves executable script mode"
 else
   fail "archive preserves executable script mode"
+fi
+
+if [[ -x "$extracted/skills/workstack-agent-routing/scripts/resolve-agent" ]]; then
+  pass "archive preserves WorkStack routing resolver executable mode"
+else
+  fail "archive preserves WorkStack routing resolver executable mode"
 fi
 
 zip_times="$(python3 - "$archive" <<'PY'
@@ -263,7 +280,7 @@ if [[ "$missing_status" -ne 0 ]]; then
 else
   fail "package script rejects incomplete metadata source"
 fi
-assert_contains "$missing_output" "ERROR: metadata source is incomplete" "incomplete metadata reports clear error"
+assert_contains "$missing_output" "ERROR: OpenAI agent metadata is unavailable from committed source or metadata source" "missing metadata reports both attempted sources"
 
 dirty_repo="$TEST_ROOT/dirty-repo"
 git clone -q --no-local "$REPO_ROOT" "$dirty_repo"
