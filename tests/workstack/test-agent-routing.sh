@@ -44,7 +44,7 @@ assert_failure() {
     echo "not ok - $name (command unexpectedly succeeded)" >&2
     exit 1
   fi
-  if ! grep -F "$diagnostic" "$tmp/stderr" >/dev/null; then
+  if ! grep -F -- "$diagnostic" "$tmp/stderr" >/dev/null; then
     echo "not ok - $name" >&2
     echo "expected diagnostic containing: $diagnostic" >&2
     cat "$tmp/stderr" >&2
@@ -55,7 +55,8 @@ assert_failure() {
 }
 
 mkdir -p "$tmp/empty" "$tmp/project/.workstack" "$tmp/reviewer/.workstack" \
-  "$tmp/dependent/.workstack" "$tmp/invalid/.workstack" "$tmp/invalid-effort/.workstack"
+  "$tmp/filtered/.workstack" "$tmp/dependent/.workstack" "$tmp/invalid/.workstack" \
+  "$tmp/invalid-effort/.workstack"
 
 cat >"$tmp/project/.workstack/agents.yaml" <<'YAML'
 version: 1
@@ -128,6 +129,22 @@ roles:
         effort: medium
 YAML
 
+cat >"$tmp/filtered/.workstack/agents.yaml" <<'YAML'
+version: 1
+roles:
+  reviewer:
+    harness: reviewer-harness
+    model: independent-model
+    effort: high
+    fallbacks:
+      - harness: author-harness
+        model: author-model
+        effort: high
+      - harness: final-harness
+        model: final-model
+        effort: medium
+YAML
+
 cat >"$tmp/invalid/.workstack/agents.yaml" <<'YAML'
 version: 1
 roles: &shared
@@ -151,15 +168,15 @@ while IFS='|' read -r role model effort; do
     "{\"role\":\"$role\",\"harness\":\"codex\",\"model\":\"$model\",\"effort\":\"$effort\",\"fallbacks\":[],\"source\":\"bundled:role\",\"fallback_reason\":null}" \
     --project-root "$tmp/empty" --role "$role"
 done <<'CASES'
-explorer|sol|medium
-planner|sol|high
-implementer|sol|high
-operator|sol|low
-monitor|sol|medium
+explorer|gpt-5.6-sol|medium
+planner|gpt-5.6-sol|high
+implementer|gpt-5.6-sol|high
+operator|gpt-5.6-sol|low
+monitor|gpt-5.6-sol|medium
 CASES
 
 assert_route "bundled reviewer fallback order" \
-  '{"role":"reviewer","harness":"claude-code","model":"claude-opus-4.8","effort":"high","fallbacks":[{"harness":"codex","model":"gpt-5.5-codex","effort":"high"}],"source":"bundled:role","fallback_reason":null}' \
+  '{"role":"reviewer","harness":"claude","model":"opus-4-8","effort":"high","fallbacks":[{"harness":"codex","model":"gpt-5.5","effort":"high"}],"source":"bundled:role","fallback_reason":null}' \
   --project-root "$tmp/empty" --role reviewer --author-model different-model
 
 assert_route "project role" \
@@ -197,6 +214,10 @@ assert_route "reviewer selects independent fallback" \
   '{"role":"reviewer","harness":"reviewer-harness","model":"independent-model","effort":"high","fallbacks":[{"harness":"final-harness","model":"final-model","effort":"medium"}],"source":"project:role:fallback[0]","fallback_reason":"reviewer model matches author model identity"}' \
   --project-root "$tmp/reviewer" --role reviewer --author-model author-model
 
+assert_route "reviewer filters author from fallback chain" \
+  '{"role":"reviewer","harness":"reviewer-harness","model":"independent-model","effort":"high","fallbacks":[{"harness":"final-harness","model":"final-model","effort":"medium"}],"source":"project:role","fallback_reason":null}' \
+  --project-root "$tmp/filtered" --role reviewer --author-model author-model
+
 assert_failure "reviewer fails without author identity" \
   "reviewer role requires --author-model" \
   --project-root "$tmp/reviewer" --role reviewer
@@ -212,6 +233,22 @@ assert_failure "unknown role has no route" \
 assert_failure "parallel slice maximum" \
   "requested 5 parallel slices exceeds configured maximum 4" \
   --project-root "$tmp/project" --role implementer --parallel-slices 5
+
+assert_failure "bundled parallel slice maximum" \
+  "requested 9 parallel slices exceeds configured maximum 8" \
+  --project-root "$tmp/empty" --role implementer --parallel-slices 9
+
+assert_failure "parallel slices must be positive" \
+  "--parallel-slices must be a positive integer" \
+  --project-root "$tmp/empty" --role implementer --parallel-slices 0
+
+assert_failure "incomplete explicit override" \
+  "explicit override requires --override-harness, --override-model, and --override-effort" \
+  --project-root "$tmp/empty" --role implementer --override-model run-model
+
+assert_failure "reviewer specialty requires reviewer role" \
+  "--reviewer-specialty is valid only for the reviewer role" \
+  --project-root "$tmp/empty" --role implementer --reviewer-specialty security
 
 assert_failure "unsupported YAML anchor" \
   "unsupported YAML feature" \

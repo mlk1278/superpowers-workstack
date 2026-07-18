@@ -372,17 +372,28 @@ def enforce_reviewer_independence(
     if not author_model:
         raise RoutingError("reviewer role requires --author-model")
     author_identity = author_model.strip().casefold()
+    independent_fallbacks = [
+        (index, fallback)
+        for index, fallback in enumerate(route["fallbacks"])
+        if fallback["model"].strip().casefold() != author_identity
+    ]
     if route["model"].strip().casefold() != author_identity:
-        return route, source, None
-    for index, fallback in enumerate(route["fallbacks"]):
-        if fallback["model"].strip().casefold() != author_identity:
-            selected = {**fallback, "fallbacks": route["fallbacks"][index + 1 :]}
-            return (
-                selected,
-                f"{source}:fallback[{index}]",
-                "reviewer model matches author model identity",
-            )
-    raise RoutingError("no independent reviewer route is available")
+        return {
+            **route,
+            "fallbacks": [fallback for _, fallback in independent_fallbacks],
+        }, source, None
+    if not independent_fallbacks:
+        raise RoutingError("no independent reviewer route is available")
+    index, fallback = independent_fallbacks[0]
+    selected = {
+        **fallback,
+        "fallbacks": [item for _, item in independent_fallbacks[1:]],
+    }
+    return (
+        selected,
+        f"{source}:fallback[{index}]",
+        "reviewer model matches author model identity",
+    )
 
 
 def main() -> int:
