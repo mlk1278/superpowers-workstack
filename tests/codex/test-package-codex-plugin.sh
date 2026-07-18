@@ -172,7 +172,7 @@ assert_contains "$archive_paths" ".codex-plugin/plugin.json" "archive includes C
 assert_contains "$archive_paths" "skills/brainstorming/SKILL.md" "archive includes skills"
 assert_contains "$archive_paths" "skills/brainstorming/agents/openai.yaml" "archive includes OpenAI skill metadata"
 assert_contains "$archive_paths" "skills/workstack-agent-routing/SKILL.md" "archive includes WorkStack routing skill"
-assert_contains "$archive_paths" "skills/workstack-agent-routing/defaults.yaml" "archive includes WorkStack routing defaults"
+assert_contains "$archive_paths" "skills/workstack-agent-routing/defaults.json" "archive includes WorkStack routing defaults"
 assert_contains "$archive_paths" "skills/workstack-agent-routing/scripts/resolve-agent" "archive includes WorkStack routing resolver"
 assert_contains "$archive_paths" "skills/workstack-agent-routing/agents/openai.yaml" "archive includes committed WorkStack routing metadata"
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"

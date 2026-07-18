@@ -13,17 +13,16 @@ Run `scripts/resolve-agent --project-root <root> --role <role>` before dispatch.
 
 Record the normalized JSON result in the work log before dispatch. Dispatch the returned primary route and retain `fallbacks` in their returned order. Do not reconstruct or guess a route when resolution fails. In particular, fail closed on reviewer-independence errors.
 
-Resolution precedence is explicit run override, reviewer specialty, workflow plus harness, workflow, harness, project role, then bundled role.
+Resolution precedence is explicit run override, reviewer specialty, workflow, harness, project role, then bundled role.
 
 ## Project configuration
 
-Read optional overrides from `<project-root>/.workstack/agents.yaml`. The constrained schema accepts these top-level keys:
+Read optional overrides from `<project-root>/.workstack/agents.json`. It accepts these top-level keys:
 
-- `version`: integer `1`
-- `max_parallel_slices`: positive integer
-- `roles`, `harnesses`, `workflows`, and `reviewer_specialties`: mappings from names to routes
-- `workflow_harnesses`: workflow mappings containing harness mappings containing routes
+- `version`: integer `1`.
+- `roles`: default role-to-route overrides.
+- `harnesses`: harness names containing role-to-route overrides.
+- `workflows`: workflow names containing role-to-route overrides.
+- `reviewer_specialties`: specialty-to-route overrides.
 
-Each route requires scalar string `harness`, `model`, and `effort` values. It may contain `fallbacks`, an ordered list of mappings with those same three fields. Effort accepts only levels present in the bundled defaults.
-
-The parser intentionally supports only nested mappings, scalar strings, integers, booleans, and route fallback lists. It rejects aliases, anchors, tags, merge keys, flow collections, multiline scalars, multiple documents, nulls, floats, and lists outside `fallbacks`. Treat an unsupported-feature diagnostic as a configuration error; never guess its meaning.
+Each route requires string `harness`, `model`, and `effort` values. It may contain `fallbacks`, an ordered array of routes. Treat invalid JSON or an incomplete selected route as a configuration error; never guess its meaning.

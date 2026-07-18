@@ -690,7 +690,7 @@ Specialty is a request attribute, not another hard-coded model role. Examples ar
 Routing is configured in one project file:
 
 ```text
-.workstack/agents.yaml
+.workstack/agents.json
 ```
 
 The file supports:
@@ -698,20 +698,18 @@ The file supports:
 - default mapping for each logical role;
 - harness-specific mappings;
 - workflow-specific overrides;
-- workflow-and-harness-specific overrides;
 - reviewer-specialty overrides;
 - model and effort fallback chains;
-- maximum parallel slices;
 - required reviewer-independence policy.
 
 Resolution precedence is:
 
 1. explicit user override for the current run;
-2. workflow-and-harness-specific project override;
+2. reviewer-specialty project override;
 3. workflow-specific project override;
 4. harness-specific project override;
 5. project role default;
-6. bundled WorkStack default.
+6. bundled WorkStack role default.
 
 Only this file and the bundled defaults contain concrete model identifiers. Replacing a retired model or moving to a new generation requires one configuration change, not edits across skills.
 
@@ -727,7 +725,7 @@ Planner, reviewer, UX specialty, final-gate specialty, and monitor mappings are 
 
 ### 16.4 Preflight and fallback
 
-The resolver prints and records the selected harness, model, effort, and fallback reason before dispatch. It verifies that the destination is available. If the primary destination is unavailable, it selects the first valid configured fallback.
+The resolver prints and records the selected harness, model, effort, and fallback reason before dispatch. The destination harness owns availability checks. If dispatch reports that the primary destination is unavailable, the owning workflow tries configured fallbacks in order and records the reason.
 
 Review dispatch additionally verifies that reviewer identity differs from author identity. If no independent reviewer is available, the gate fails closed and asks for a routing change. It never silently lets an author approve its own work.
 
@@ -884,7 +882,7 @@ After several tasks and one merged slice, the orchestrator loses conversation co
 
 ### 22.8 Model retirement
 
-A configured reviewer becomes unavailable. Updating `.workstack/agents.yaml` or activating its fallback restores every spec, task, UX, and gate review path without editing skill bodies. Reviewer-independence checks still pass.
+A configured reviewer becomes unavailable. Updating `.workstack/agents.json` or activating its fallback restores every spec, task, UX, and gate review path without editing skill bodies. Reviewer-independence checks still pass.
 
 ### 22.9 Post-gate PR fix
 
@@ -917,4 +915,4 @@ The workflow itself is complete when:
 
 ## 24. Open questions
 
-None. Concrete non-Sol model identifiers are operational routing values selected when the initial `.workstack/agents.yaml` is created; they are deliberately not part of the workflow contract.
+None. Concrete non-Sol model identifiers are operational routing values selected when the initial `.workstack/agents.json` is created; they are deliberately not part of the workflow contract.

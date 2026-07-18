@@ -20,7 +20,7 @@
 
 - Preserve upstream plugin identity and `superpowers:*` skill references.
 - Do not copy skills per harness; every harness packages the shared `skills/` tree.
-- Skills request logical roles only. Concrete harness, model, and effort values live in bundled defaults or `.workstack/agents.yaml`.
+- Skills request logical roles only. Concrete harness, model, and effort values live in bundled defaults or `.workstack/agents.json`.
 - Default routing is Sol high for implementation, Sol medium for exploration, and Sol low for mechanical operations.
 - Reviewers must resolve to a different model identity from the author or preflight fails closed.
 - Use no new third-party runtime dependency.
@@ -49,7 +49,7 @@
 | 2026-07-18 | Use a living plan with detailed ready slices and deferred planning checkpoints. | Dependent later work should be planned against code that actually exists. |
 | 2026-07-18 | Use logical roles and centralized routing. | Model retirement or harness changes should require one configuration edit. |
 | 2026-07-18 | Bundle Claude Opus 4.8 high as the primary reviewer and Codex GPT-5.5 high as its fallback. | A default install needs an independent non-Sol review path; these remain replaceable operational values in routing configuration. |
-| 2026-07-18 | Use a constrained, documented YAML schema parsed with Python's standard library. | Retains a readable `.workstack/agents.yaml` without adding PyYAML. |
+| 2026-07-18 | Use JSON configuration and Python's standard parser. | Keeps routing deterministic without maintaining a custom configuration parser. |
 | 2026-07-18 | Do not inherit controller conversation history into implementation or review agents. | File handoffs provide bounded context and avoid repeated token load. |
 
 ## Context and Subagent Contract
@@ -90,8 +90,8 @@ Exploration is bounded and normally Sol medium. Planning and difficult orchestra
 
 - A machine-readable allowlist names the three permitted upstream core divergences and their reasons.
 - A check rejects unlisted changes to upstream-owned files under the baseline `skills/` tree while permitting WorkStack skill additions and fork-owned build/test changes.
-- A bundled routing profile resolves role, harness, workflow, specialty, effort, fallback, parallel limit, and reviewer-independence settings.
-- Project overrides come from one `.workstack/agents.yaml` file.
+- A bundled routing profile resolves role, harness, workflow, specialty, effort, fallback, and reviewer-independence settings.
+- Project overrides come from one `.workstack/agents.json` file.
 - Sol high/medium/low defaults are encoded only in routing configuration, not skill prose.
 - Codex packaging includes WorkStack skills and accepts committed OpenAI metadata for fork-owned skills.
 - Existing upstream tests remain green.
@@ -113,7 +113,7 @@ Exploration is bounded and normally Sol medium. Planning and difficult orchestra
 - [ ] Write a fixture-driven shell test that creates a temporary Git repository with a baseline file, a permitted modification, an unlisted modification, and a WorkStack-only added file. Verify the checker accepts the permitted modification and addition, and rejects the unlisted baseline-file change with its path in stderr.
 - [ ] Add `workstack/upstream-divergences.json` with the baseline SHA and exactly these permitted core paths: `skills/brainstorming/SKILL.md`, `skills/writing-plans/SKILL.md`, `skills/subagent-driven-development/SKILL.md`, and `skills/subagent-driven-development/scripts/task-brief`. Give each entry one short generic reason.
 - [ ] Implement the checker with Python 3 standard-library JSON and subprocess APIs. Compare the requested ref with the configured baseline, protect files that existed under the baseline's `skills/` tree, ignore fork-only `skills/workstack-*` additions, and reject every modified/deleted protected skill path absent from the allowlist. Tests, build scripts, docs, and harness manifests are deliberately outside this core-divergence policy.
-- [ ] Add `.workstack/` only if needed for local generated state; do not ignore project-owned `.workstack/agents.yaml`. Preserve the existing `.superpowers/` ignore.
+- [ ] Add `.workstack/` only if needed for local generated state; do not ignore project-owned `.workstack/agents.json`. Preserve the existing `.superpowers/` ignore.
 - [ ] Run `bash tests/workstack/test-upstream-divergences.sh`; expect `PASS`.
 - [ ] Run `python3 scripts/check-workstack-divergences.py`; expect exit 0.
 - [ ] Commit the task.
@@ -123,20 +123,20 @@ Exploration is bounded and normally Sol medium. Planning and difficult orchestra
 **Files:**
 
 - Create: `skills/workstack-agent-routing/SKILL.md`
-- Create: `skills/workstack-agent-routing/defaults.yaml`
+- Create: `skills/workstack-agent-routing/defaults.json`
 - Create: `skills/workstack-agent-routing/scripts/resolve-agent`
 - Create: `skills/workstack-agent-routing/agents/openai.yaml`
 - Create: `tests/workstack/test-agent-routing.sh`
 
 **Interfaces:**
 
-- Consumes: optional `<project-root>/.workstack/agents.yaml`; role; optional harness, workflow, reviewer specialty, and author identity.
+- Consumes: optional `<project-root>/.workstack/agents.json`; role; optional harness, workflow, reviewer specialty, and author identity.
 - Produces: normalized JSON on stdout containing `role`, `harness`, `model`, `effort`, ordered `fallbacks`, `source`, and `fallback_reason`; nonzero exit with a direct diagnostic when no route or no independent reviewer is available.
 
-- [ ] Write table-driven shell fixtures for bundled defaults and every precedence layer: project role, harness, workflow, workflow+harness, explicit run override, and reviewer specialty. Add fallback and author/reviewer identity cases.
-- [ ] Define a constrained YAML schema limited to nested mappings, scalar strings/integers/booleans, and ordered fallback lists. Document unsupported YAML features in the internal skill so configuration failure is explicit rather than guessed.
+- [ ] Write table-driven shell fixtures for bundled defaults and every precedence layer: project role, harness, workflow, explicit run override, and reviewer specialty. Add fallback and author/reviewer identity cases.
+- [ ] Define a small JSON schema containing role defaults, per-harness and per-workflow role overrides, reviewer specialties, and ordered fallback routes.
 - [ ] Add bundled defaults for `explorer` (Sol medium), `planner` (Sol high), `implementer` (Sol high), `operator` (Sol low), and `monitor` (Sol medium). Configure Claude Opus 4.8 high as the primary reviewer and Codex GPT-5.5 high as its fallback, with specialty overrides where needed. Concrete model identifiers appear only in this file and project overrides.
-- [ ] Implement `resolve-agent` with Python 3 standard library only. Resolve in this order: explicit run override; workflow+harness; workflow; harness; project role; bundled role. Validate model, effort, fallback order, maximum parallel slices, and reviewer identity.
+- [ ] Implement `resolve-agent` with Python 3 standard library only. Resolve in this order: explicit run override; reviewer specialty; workflow; harness; project role; bundled role. Validate the selected route, fallback order, and reviewer identity; leave model availability to the destination harness.
 - [ ] Write `SKILL.md` as an internal helper owned by the future public WorkStack entry points. It must instruct callers to request logical roles, record the normalized result before dispatch, and fail closed on reviewer-independence errors.
 - [ ] Run `bash tests/workstack/test-agent-routing.sh`; expect all precedence, fallback, and independence cases to pass.
 - [ ] Run `! rg -ni '\b(gpt-[[:alnum:].-]+|claude-[[:alnum:].-]+|opus|sonnet|terra|luna|sol)\b' skills/workstack-* --glob 'SKILL.md'`; expect exit 0 and no concrete model identifiers.
@@ -157,7 +157,7 @@ Exploration is bounded and normally Sol medium. Planning and difficult orchestra
 
 - [ ] Add a failing packaging test proving that a fork-owned skill's committed OpenAI metadata is retained even when the external metadata fixture has no entry for that skill.
 - [ ] Change packaging metadata precedence to: committed source metadata first; external metadata second; clear failure when neither exists. Do not alter package contents outside this metadata behavior.
-- [ ] Assert the packaged `workstack-agent-routing` skill contains `SKILL.md`, `defaults.yaml`, executable resolver, and `agents/openai.yaml`.
+- [ ] Assert the packaged `workstack-agent-routing` skill contains `SKILL.md`, `defaults.json`, executable resolver, and `agents/openai.yaml`.
 - [ ] Run `bash tests/codex/test-package-codex-plugin.sh`; expect all archive and metadata cases to pass.
 - [ ] Run `bash tests/codex/test-marketplace-manifest.sh`, `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`, and the existing supported-harness manifest tests; expect exit 0.
 - [ ] Run `git diff --check` and `python3 scripts/check-workstack-divergences.py`; expect exit 0.
@@ -270,7 +270,7 @@ Exploration is bounded and normally Sol medium. Planning and difficult orchestra
 ### Checkpoint C7 — Harness and FSMCRM Cutover
 
 - **Trigger:** contracts and closeout tests pass.
-- **Outcome:** Install the fork in supported harnesses, add project `.workstack/agents.yaml`, replace transitional local workflow skills, and update FSMCRM `AGENTS.md` with the concise human workflow.
+- **Outcome:** Install the fork in supported harnesses, add project `.workstack/agents.json`, replace transitional local workflow skills, and update FSMCRM `AGENTS.md` with the concise human workflow.
 - **Re-explore:** current FSMCRM skills and any changes made since commit `4787cf51`; preserve unrelated user work.
 
 ### Checkpoint C8 — Pilots and Final Closeout
