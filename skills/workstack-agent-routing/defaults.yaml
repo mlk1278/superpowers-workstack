@@ -1,0 +1,31 @@
+version: 1
+max_parallel_slices: 8
+roles:
+  explorer:
+    harness: codex
+    model: sol
+    effort: medium
+  planner:
+    harness: codex
+    model: sol
+    effort: high
+  implementer:
+    harness: codex
+    model: sol
+    effort: high
+  operator:
+    harness: codex
+    model: sol
+    effort: low
+  monitor:
+    harness: codex
+    model: sol
+    effort: medium
+  reviewer:
+    harness: claude-code
+    model: claude-opus-4.8
+    effort: high
+    fallbacks:
+      - harness: codex
+        model: gpt-5.5-codex
+        effort: high
