@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to execute each ready slice task-by-task. A worker receives one extracted task brief, not this whole plan.
 
-**Status:** Active — Slice 1 ready
+**Status:** Active — Slice 1 gated
 
 **Plan owner:** Top-level WorkStack workflow orchestrator
 
@@ -71,7 +71,7 @@ Exploration is bounded and normally Sol medium. Planning and difficult orchestra
 
 | Slice | Outcome | Tickets | Dependencies | State | Branch/worktree | Contract impact | PR |
 |---|---|---|---|---|---|---|---|
-| S1 — Fork and routing foundation | Govern upstream divergence; resolve logical roles; package WorkStack skills | None assigned | None | Ready | `workstack/workflow-foundation` | None | — |
+| S1 — Fork and routing foundation | Govern upstream divergence; resolve logical roles; package WorkStack skills | None assigned | None | Gated | `workstack/workflow-foundation` at `/home/mkirk/projects/superpowers-workstack` | None | — |
 | S2 — Core extension seams | Add the three allowlisted generic seams with regression evidence | None assigned | S1 merged | Deferred | — | None | — |
 | S3 — Artifact and recovery model | Implement living-plan, ledger, context, and resume helpers | None assigned | S2 merged | Deferred | — | Reserved surfaces likely | — |
 | S4 — Public WorkStack entry points | Add Quick Task, Start Work, and Resume Work wrappers | None assigned | S3 merged | Deferred | — | None | — |
