@@ -1,6 +1,6 @@
 # WorkStack Development Workflow Specification
 
-**Status:** Draft for user review
+**Status:** Approved target state — implementation partial
 
 **Date:** 2026-07-18
 
@@ -8,13 +8,26 @@
 
 **Upstream baseline:** Superpowers v6.1.1 at `d884ae04edebef577e82ff7c4e143debd0bbec99`
 
-**Replaces as target-state authority:** The phase-oriented `workstack-*` workflow currently described in `AGENTS.md` and local skills. Existing files remain authoritative until this specification is implemented.
+**Replaces as target-state authority:** The phase-oriented `workstack-*` workflow currently described in FSMCRM's `AGENTS.md` and local skills. Existing files remain operationally authoritative until the replacement entry points and lifecycle pass the cutover conditions in Section 23.
 
 ## 1. Human summary
 
 WorkStack tracks durable product outcomes as Linear tickets, but keeps implementation detail local. New or ambiguous work is shaped into an approved direction, converted into a decision-complete specification, represented by one or more Linear tickets, and then organized in one living implementation plan. The plan may cover many tickets, but it fully details only the delivery slices that are ready to build. Later, dependent work remains a short planning checkpoint until earlier slices merge and the codebase can be explored again. Human-defined phases and timeboxes are prioritization tools only; they never control implementation and never become workflow artifacts.
 
 Implementation happens one delivery slice at a time. A slice contains one or more Linear tickets and several small Superpowers implementation tasks, but it has exactly one whole-slice gate and one pull request. The inner Superpowers loop remains sequential and reliable: a fresh implementer completes each task, a different model performs one combined requirements-and-quality review, and the slice receives a broad final review before its PR opens. Independent slices may run in parallel worktrees under a lightweight active contract when they share or may affect common interfaces. WorkStack owns this outer coordination layer; upstream Superpowers continues to own brainstorming, plan detail, task execution, debugging, verification, and code-review mechanics.
+
+### 1.1 Implementation status as of 2026-07-19
+
+The maintained fork has completed its routing foundation and generic core extension seams:
+
+- fork divergence governance and centralized logical agent routing;
+- project overrides through `.workstack/agents.json`;
+- caller-selected continuations after brainstorming and plan writing;
+- inclusion of plan-wide constraints in every extracted SDD task brief;
+- an exact-head final review gate with fix, verification, and same-thread re-review loops;
+- reviewer-only loading of `docs/REVIEW-GUIDANCE.md`, plus optional task-specific review nuance from the orchestrator.
+
+These changes are on `main` through `7a392aa`, with deterministic focused tests passing. The implementation plan still records missing fresh-agent behavioral evidence for several S2 scenarios. The landed changes are infrastructure for the target workflow, not the completed workflow. The living-plan recovery model, three public entry points, slice/UX/PR lifecycle, parallel-contract lifecycle, FSMCRM cutover, and pilots remain unimplemented. Therefore FSMCRM must retain its transitional `workstack-*` skills until their replacement behavior exists and passes the acceptance scenarios in Section 22.
 
 ```text
                   New or ambiguous work
@@ -154,16 +167,28 @@ A temporary coordination record for concurrent work that reserves a shared surfa
 
 ## 6. Distribution and ownership architecture
 
-### 6.1 Fork for packaging, overlay for maintainability
+### 6.1 Fork as source, project-local installation
 
-WorkStack must distribute one maintained fork of current Superpowers. The fork retains the upstream plugin/package identity needed by upstream skill-to-skill references, so existing `superpowers:*` calls continue to resolve. It adds WorkStack-specific skills, configuration, tests, and project documentation beside upstream core.
+WorkStack maintains one fork of current Superpowers as the source of truth. The fork retains upstream skill names and references, and adds WorkStack-specific skills, configuration, tests, and project documentation beside upstream core.
 
 The fork has two Git remotes:
 
 - `upstream`: the canonical Superpowers repository;
-- `origin`: the WorkStack-maintained fork used for installation.
+- `origin`: the WorkStack-maintained fork used as the project installation source.
 
-FSMCRM installs the WorkStack fork as one artifact and does not install vanilla upstream Superpowers beside it. It does not keep divergent copies of the same skill under `.claude/`, `.codex/`, and other harness-specific project folders.
+FSMCRM installs the complete fork skill set project-locally with the npm-delivered Agent Skills installer. The canonical installed set lives under `.agents/skills`; harness-specific skill directories may contain links to that canonical set when the installer requires them. FSMCRM does not install the WorkStack fork or vanilla Superpowers globally, does not activate either as a project plugin, and does not maintain independently edited copies under `.claude/`, `.codex/`, or other harness-specific folders.
+
+The standard project-local installation command is:
+
+```bash
+npx -y skills@latest add mlk1278/superpowers-workstack \
+  --skill '*' \
+  --agent claude-code \
+  --agent codex \
+  --yes
+```
+
+The repository lockfile records the selected skills and source. Plugin manifests may remain in the fork for upstream compatibility and other consumers, but FSMCRM's workflow does not depend on plugin installation or activation.
 
 ### 6.2 Ownership boundary
 
@@ -205,7 +230,8 @@ The initial permitted core fixes are limited to:
 
 - allowing a caller-supplied continuation after brainstorming and plan writing, so WorkStack can insert spec verification and slice orchestration;
 - ensuring plan-wide global constraints are present in every extracted implementer brief;
-- making broad final review a closed fix-and-re-review gate rather than a one-pass report.
+- making broad final review a closed fix-and-re-review gate rather than a one-pass report;
+- allowing reviewers, and only reviewers, to load canonical project review guidance and scoped task nuance.
 
 Any broader core rewrite requires a new approved specification.
 
@@ -897,13 +923,13 @@ A plan completes after its final consumer merges. Closeout verifies the prune tr
 
 ### 22.11 Upstream update
 
-The WorkStack fork merges a newer Superpowers release. Shared core remains unchanged except for the documented allowlist, wrapper compatibility tests pass, the three public entry points still invoke their expected upstream continuations, and no duplicated harness-specific skill copy is updated by hand.
+The WorkStack fork merges a newer Superpowers release. Shared core remains unchanged except for the documented allowlist, wrapper compatibility tests pass, the three public entry points still invoke their expected upstream continuations, and the project-local canonical skill set updates from the fork without hand-editing a harness-specific copy.
 
 ## 23. Definition of done for the workflow implementation
 
 The workflow itself is complete when:
 
-1. the WorkStack Superpowers fork can be installed as one artifact in every supported harness;
+1. the complete WorkStack skill set can be installed project-locally from the maintained fork into every supported harness without a global or project plugin dependency;
 2. the three public entry points route correctly from clean sessions;
 3. canonical specification, plan, contract, scratch, and routing locations are enforced;
 4. the living plan supports deferred checkpoints and multi-ticket slices;
@@ -915,6 +941,8 @@ The workflow itself is complete when:
 10. compatibility tests protect the small upstream divergence allowlist;
 11. project `AGENTS.md` explains the workflow in two paragraphs plus the three entry points;
 12. a human can execute the documented process without needing hidden agent-only state.
+
+Until all twelve conditions pass, installation success is not workflow-completion evidence and FSMCRM's transitional `workstack-*` skills must not be removed merely because the fork's core skills are present.
 
 ## 24. Open questions
 
