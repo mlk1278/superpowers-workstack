@@ -74,9 +74,31 @@ main() {
     cat > "$repo/plan.md" <<'PLAN'
 # Plan
 
+## Global Constraints
+
+- Keep shared behavior unchanged.
+
+```text
+### Task 99: Fenced global example
+```
+
+## Context
+
+This must not enter the brief.
+
 ## Task 1: First thing
 
 Do the first thing.
+
+```text
+### Task 99: Fenced task example
+```
+
+Still part of Task 1.
+
+## Task 2: Second thing
+
+Do the second thing.
 PLAN
 
     local brief_out brief_path
@@ -89,6 +111,47 @@ PLAN
             echo "    got: $brief_path"
             ;;
     esac
+
+    local expected_brief="$TEST_ROOT/expected-brief.md"
+    cat > "$expected_brief" <<'BRIEF'
+## Global Constraints
+
+- Keep shared behavior unchanged.
+
+```text
+### Task 99: Fenced global example
+```
+
+## Task 1: First thing
+
+Do the first thing.
+
+```text
+### Task 99: Fenced task example
+```
+
+Still part of Task 1.
+
+BRIEF
+    if cmp -s "$brief_path" "$expected_brief"; then
+        pass "task-brief includes exact global constraints before only the selected task"
+    else
+        fail "task-brief includes exact global constraints before only the selected task"
+        diff -u "$expected_brief" "$brief_path" || true
+    fi
+
+    local missing_output missing_status
+    set +e
+    missing_output="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" plan.md 9 "$repo/missing.md" 2>&1)"
+    missing_status=$?
+    set -e
+    if [[ "$missing_status" -eq 3 && "$missing_output" == *"task 9 not found"* && ! -s "$repo/missing.md" ]]; then
+        pass "missing task does not emit a constraints-only brief"
+    else
+        fail "missing task does not emit a constraints-only brief"
+        echo "    status: $missing_status"
+        echo "    output: $missing_output"
+    fi
 
     local git_id=(-c user.email=t@example.com -c user.name=t -c commit.gpgsign=false)
     ( cd "$repo" \
