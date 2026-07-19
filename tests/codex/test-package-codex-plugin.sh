@@ -175,10 +175,12 @@ assert_contains "$archive_paths" "skills/workstack-agent-routing/SKILL.md" "arch
 assert_contains "$archive_paths" "skills/workstack-agent-routing/defaults.json" "archive includes WorkStack routing defaults"
 assert_contains "$archive_paths" "skills/workstack-agent-routing/scripts/resolve-agent" "archive includes WorkStack routing resolver"
 assert_contains "$archive_paths" "skills/workstack-agent-routing/agents/openai.yaml" "archive includes committed WorkStack routing metadata"
-for ws_skill in workstack-quick-task workstack-pr-monitor workstack-ux-gate; do
+for ws_skill in workstack-quick-task workstack-pr-monitor workstack-ux-gate workstack-start workstack-resume workstack-spec-review workstack-slice-gate; do
   assert_contains "$archive_paths" "skills/$ws_skill/SKILL.md" "archive includes $ws_skill skill"
   assert_contains "$archive_paths" "skills/$ws_skill/agents/openai.yaml" "archive includes committed $ws_skill metadata"
 done
+assert_contains "$archive_paths" "skills/workstack-resume/living-plan-format.md" "archive includes living-plan format doc"
+assert_contains "$archive_paths" "skills/workstack-resume/plan-authoring.md" "archive includes plan-authoring doc"
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
 assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
 
