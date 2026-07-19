@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "roles": {
+    "explorer": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "medium"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "high"
+    },
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "high"
+    },
+    "operator": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "low"
+    },
+    "monitor": {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "medium"
+    },
+    "reviewer": {
+      "harness": "claude",
+      "model": "opus-4-8",
+      "effort": "high",
+      "fallbacks": [
+        {
+          "harness": "codex",
+          "model": "gpt-5.5",
+          "effort": "high"
+        }
+      ]
+    }
+  }
+}
