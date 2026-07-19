@@ -219,7 +219,7 @@ final whole-branch review. When you fill a reviewer template:
 
 ### Final whole-branch gate
 
-1. Using the branch's recorded `MERGE_BASE`, resolve and package an immutable head, then name that SHA in the final review dispatch:
+1. Set `MERGE_BASE` to `git merge-base <target-branch> HEAD`, where `<target-branch>` is the branch this work will merge into. Resolve and package an immutable head, then name that SHA in the final review dispatch:
 
    ```bash
    REVIEW_HEAD=$(git rev-parse HEAD)

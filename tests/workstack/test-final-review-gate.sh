@@ -39,6 +39,7 @@ assert_before() {
 }
 
 assert_contains 'REVIEW_HEAD=$(git rev-parse HEAD)' "final review resolves an exact head"
+assert_contains 'Set `MERGE_BASE` to `git merge-base <target-branch> HEAD`, where `<target-branch>` is the branch this work will merge into.' "final review defines the merge base"
 assert_contains 'scripts/review-package "$MERGE_BASE" "$REVIEW_HEAD"' "whole-branch package uses the exact head"
 assert_contains 'Only an explicit `Ready to merge? Yes` approves that SHA.' "approval verdict is explicit"
 assert_contains 'Send the complete final finding set to one fixer.' "final findings are fixed together"
