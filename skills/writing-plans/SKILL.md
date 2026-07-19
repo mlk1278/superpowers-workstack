@@ -153,6 +153,10 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
+## Continuation
+
+If the caller named one approved continuation before invoking this skill, invoke it after saving and self-reviewing the plan instead of offering the execution choices below. Otherwise use the Execution Handoff below unchanged. This changes only the terminal handoff; every preceding planning and self-review requirement still applies.
+
 ## Execution Handoff
 
 After saving the plan, offer execution choice:

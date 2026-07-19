@@ -58,7 +58,7 @@ digraph brainstorming {
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The default terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill directly.
 
 ## The Process
 
@@ -125,10 +125,7 @@ After the spec review loop passes, ask the user to review the written spec befor
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
-**Implementation:**
-
-- Invoke the writing-plans skill to create a detailed implementation plan
-- Do NOT invoke any other skill. writing-plans is the next step.
+**Continuation contract:** If the caller named one approved continuation before invoking this skill, invoke it after the user approves the written spec; otherwise invoke `writing-plans`. This changes only the terminal handoff; every preceding step and approval gate still applies.
 
 ## Key Principles
 
