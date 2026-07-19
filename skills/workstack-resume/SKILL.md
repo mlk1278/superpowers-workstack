@@ -14,7 +14,7 @@ The durable record is the state; you are replaceable. A fresh orchestrator must 
 
 ## 1. Discover state
 
-Never trust conversation memory. Read the durable sources in authority order: merged commits and current PR head state; the living plan's slice index and any active contract; the worktree-local progress ledger; task reports and review packages; Git history on the slice branch; Linear status for coarse outcome state; conversation memory last. When sources disagree, reconcile the less authoritative source before dispatching work. Write every state transition to the ledger before acting on it.
+Never trust conversation memory. Read the durable sources in authority order: merged commits and current PR head state; the living plan's slice index and any active contract (scan `docs/active-contracts/` before any shared-surface planning); the worktree-local progress ledger; task reports and review packages; Git history on the slice branch; Linear status for coarse outcome state; conversation memory last. When sources disagree, reconcile the less authoritative source before dispatching work. Write every state transition to the ledger before acting on it.
 
 ## 2. Dispatch table
 
@@ -25,6 +25,7 @@ Act on the first row matching the discovered state, then rediscover and repeat.
 | Approved spec, no living plan | Create or reconcile Linear tickets in one batched operation. Invoke superpowers:writing-plans naming `workstack-resume` as the continuation, with this skill's `plan-authoring.md` and `living-plan-format.md` named in the prompt. Obtain your human partner's approval of the initial plan. |
 | Plan with a due planning checkpoint | Confirm prerequisite slices merged; sync to the current base head; re-explore the checkpoint's named surfaces and contracts; detail the new ready frontier in the same plan; self-review it. Pause for approval only when product behavior, acceptance criteria, ticket scope, or an approved cross-slice interface changed. |
 | Ready slice, not started | Preflight: resolve every required role via workstack-agent-routing (fail closed on reviewer independence); sync the slice base; create an isolated worktree with superpowers:using-git-worktrees, stating the worktree decision up front; apply the project's worktree rules; write the uncommitted worktree context pointer; initialize the ledger; mark slice tickets in progress in one Linear operation. Then execute the slice's tasks with superpowers:subagent-driven-development. |
+| Two or more ready slices, eligibility claims all pass | Verify or create the plan's single contract per this skill's `active-contracts.md`, then run each slice as its own sequential slice loop in its own worktree — at most two concurrent code-bearing slices by default. Overlap or doubt means sequential. |
 | Active slice, task incomplete | A task marked complete in the ledger with matching commits is never redispatched. Resume the interrupted task from its ledger row, brief, and commits. |
 | Task reviews clean, gate not passed | Run workstack-ux-gate when the slice requires it, then workstack-slice-gate. Recover `REVIEW_HEAD` from the ledger, never memory. |
 | Gated, no PR | Complete the branch with superpowers:finishing-a-development-branch, declaring the pull-request completion route and the project's target base branch, then hand the PR to workstack-pr-monitor. |

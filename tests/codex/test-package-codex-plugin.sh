@@ -181,6 +181,7 @@ for ws_skill in workstack-quick-task workstack-pr-monitor workstack-ux-gate work
 done
 assert_contains "$archive_paths" "skills/workstack-resume/living-plan-format.md" "archive includes living-plan format doc"
 assert_contains "$archive_paths" "skills/workstack-resume/plan-authoring.md" "archive includes plan-authoring doc"
+assert_contains "$archive_paths" "skills/workstack-resume/active-contracts.md" "archive includes active-contracts doc"
 assert_contains "$archive_paths" "assets/app-icon.png" "archive includes app icon"
 assert_contains "$archive_paths" "assets/superpowers-small.svg" "archive includes composer icon"
 

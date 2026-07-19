@@ -76,4 +76,10 @@ assert_no_model_names "$skill"
 grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
 echo "ok - committed OpenAI metadata present"
 
+assert_contains "$skill" "scan \`docs/active-contracts/\`" "discovery scans contracts"
+assert_contains "$skill" "Two or more ready slices, eligibility claims all pass" "row: parallel frontier"
+assert_contains "$skill" "active-contracts.md" "contract doc referenced"
+assert_contains "$skill" "its own sequential slice loop in its own worktree" "parallel isolation"
+assert_contains "$skill" "Overlap or doubt means sequential." "sequential default"
+
 echo "PASS"
