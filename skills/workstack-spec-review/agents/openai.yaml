@@ -1,0 +1,4 @@
+interface:
+  display_name: "WorkStack Spec Review"
+  short_description: "Independent review loop for a draft specification"
+  default_prompt: "Use $workstack-spec-review to review this specification."
