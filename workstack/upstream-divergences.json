@@ -28,6 +28,10 @@
     {
       "path": "skills/requesting-code-review/code-reviewer.md",
       "reason": "Provide reviewer-only project guidance and scoped review nuance."
+    },
+    {
+      "path": "skills/finishing-a-development-branch/SKILL.md",
+      "reason": "caller-declared completion contract so orchestrated slices reach their gated PR without an interactive options menu; menu remains the default"
     }
   ]
 }
