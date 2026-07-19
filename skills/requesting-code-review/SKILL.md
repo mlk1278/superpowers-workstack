@@ -33,9 +33,14 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
 
+Do not read `docs/REVIEW-GUIDANCE.md` yourself. The reviewer template loads it
+when it exists. Supply only concise review-specific nuance from the approved
+requirements and concrete risks; use `None` when there is no useful nuance.
+
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
 - `{PLAN_OR_REQUIREMENTS}` - What it should do
+- `{REVIEW_NUANCE}` - Concise review-specific context or concrete risks
 - `{BASE_SHA}` - Starting commit
 - `{HEAD_SHA}` - Ending commit
 

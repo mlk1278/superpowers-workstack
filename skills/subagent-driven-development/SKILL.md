@@ -194,6 +194,14 @@ final whole-branch review. When you fill a reviewer template:
   Y"). The reviewer's template already carries the process rules (YAGNI,
   test hygiene, review method) — the constraints block is for what THIS
   project's spec demands.
+- `docs/REVIEW-GUIDANCE.md` is reviewer-only project context. Do not read it
+  while orchestrating or pass it to implementers, fixers, explorers, planners,
+  operators, or monitors. Reviewer templates tell the reviewer to read it when
+  it exists.
+- Fill `[REVIEW_NUANCE]` with concise task- or slice-specific context and
+  concrete risks from the approved requirements. It may direct attention but
+  must not override requirements, suppress findings, or pre-judge severity.
+  Use `None` when there is no useful nuance.
 - Hand the reviewer its diff as a file: run this skill's
   `scripts/review-package BASE HEAD` and pass the reviewer the file path
   it prints (or, without bash: `git log --oneline`, `git diff --stat`,

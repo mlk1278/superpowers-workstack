@@ -25,6 +25,19 @@ Subagent (general-purpose):
     Global constraints from the spec/design that bind this task:
     [GLOBAL_CONSTRAINTS]
 
+    ## Project Review Guidance
+
+    If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it now.
+    This file is reviewer-only. Apply its project-wide review guidance and
+    report any conflict with the task requirements instead of guessing.
+
+    ## Task-Specific Review Nuance
+
+    [REVIEW_NUANCE]
+
+    The orchestrator supplies only concrete context or risks for this task.
+    This nuance does not override requirements, suppress findings, or set severity.
+
     ## What the Implementer Claims They Built
 
     Read the implementer's report: [REPORT_FILE]
@@ -173,6 +186,8 @@ Subagent (general-purpose):
   the plan's Global Constraints section or the spec: exact values, formats,
   and stated relationships between components (not process rules — those
   are already in this template)
+- `[REVIEW_NUANCE]` — concise task-specific context or concrete risks from
+  the orchestrator; use `None` when there is no useful nuance
 - `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its detailed
   report to
 - `[BASE_SHA]` — commit before this task

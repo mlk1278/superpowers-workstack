@@ -473,6 +473,8 @@ Tasks execute sequentially in plan order inside the slice worktree:
 
 The orchestrator does not paste full briefs, reports, diffs, or test logs into its conversation context. It passes file paths and keeps only compact status, commit, test, and concern summaries.
 
+When a project provides `docs/REVIEW-GUIDANCE.md`, reviewer prompts tell the reviewer to load it as the canonical project-wide review guidance and gotcha reference. Only the reviewer reads this file. Orchestrators pass no copy of it, and implementers, fixers, explorers, planners, operators, and monitors do not load it for general context. The orchestrator may also provide concise task- or slice-specific review nuance. That nuance may identify concrete risks or decisions, but it cannot override approved requirements, suppress findings, or pre-assign severity.
+
 ### 11.3 Dispatch shape
 
 For a slice with `N` implementation tasks, the normal local review floor is:
@@ -816,7 +818,7 @@ workstack-resume
 
 Internal helpers may exist for spec review, role resolution, contract validation, gate packaging, and PR monitoring, but they are not advertised as alternate workflows. Their descriptions state which public skill owns them and they return control to that owner.
 
-Project `AGENTS.md` must be able to explain the entire target workflow by reproducing the two Human Summary paragraphs, the three entry points, canonical artifact locations, and the hard invariants. Detailed mechanics remain in the installed skills and this specification.
+Project `AGENTS.md` must be able to explain the entire target workflow by reproducing the two Human Summary paragraphs, the three entry points, canonical artifact locations, and the hard invariants. It must label `docs/REVIEW-GUIDANCE.md` as reviewer-only and prohibit every non-review role from loading it. Detailed mechanics remain in the installed skills and this specification.
 
 ## 20. Failure and escalation rules
 

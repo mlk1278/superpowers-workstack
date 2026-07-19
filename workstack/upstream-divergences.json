@@ -14,8 +14,20 @@
       "reason": "Preserve the fork delegation workflow."
     },
     {
+      "path": "skills/subagent-driven-development/task-reviewer-prompt.md",
+      "reason": "Provide reviewer-only project guidance and scoped review nuance."
+    },
+    {
       "path": "skills/subagent-driven-development/scripts/task-brief",
       "reason": "Preserve the fork task handoff."
+    },
+    {
+      "path": "skills/requesting-code-review/SKILL.md",
+      "reason": "Keep project review guidance out of orchestrator context."
+    },
+    {
+      "path": "skills/requesting-code-review/code-reviewer.md",
+      "reason": "Provide reviewer-only project guidance and scoped review nuance."
     }
   ]
 }

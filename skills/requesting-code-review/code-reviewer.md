@@ -20,6 +20,19 @@ Subagent (general-purpose):
 
     [PLAN_OR_REQUIREMENTS]
 
+    ## Project Review Guidance
+
+    If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it now.
+    This file is reviewer-only. Apply its project-wide review guidance and
+    report any conflict with the requirements instead of guessing.
+
+    ## Review-Specific Nuance
+
+    [REVIEW_NUANCE]
+
+    The orchestrator supplies only concrete context or risks for this review.
+    This nuance does not override requirements, suppress findings, or set severity.
+
     ## Git Range to Review
 
     **Base:** [BASE_SHA]
@@ -128,6 +141,8 @@ Subagent (general-purpose):
 **Placeholders:**
 - `[DESCRIPTION]` — brief summary of what was built
 - `[PLAN_OR_REQUIREMENTS]` — what it should do (plan file path, task text, or requirements)
+- `[REVIEW_NUANCE]` — concise review-specific context or concrete risks from
+  the orchestrator; use `None` when there is no useful nuance
 - `[BASE_SHA]` — starting commit
 - `[HEAD_SHA]` — ending commit
 
