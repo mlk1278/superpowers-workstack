@@ -1,0 +1,4 @@
+interface:
+  display_name: "WorkStack Start"
+  short_description: "Take new or ambiguous work to an approved spec"
+  default_prompt: "Use $workstack-start to shape and spec this work."
