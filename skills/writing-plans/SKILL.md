@@ -155,7 +155,7 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Continuation
 
-If the caller named one approved continuation before invoking this skill, invoke it after saving and self-reviewing the plan instead of offering the execution choices below. Otherwise use the Execution Handoff below unchanged. This changes only the terminal handoff; every preceding planning and self-review requirement still applies.
+If the invoking prompt named exactly one continuation skill before this skill was invoked, invoke it after saving and self-reviewing the plan instead of offering the execution choices below. Otherwise use the Execution Handoff below unchanged. This changes only the terminal handoff; every preceding planning and self-review requirement still applies.
 
 ## Execution Handoff
 

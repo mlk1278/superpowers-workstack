@@ -226,7 +226,7 @@ final whole-branch review. When you fill a reviewer template:
    scripts/review-package "$MERGE_BASE" "$REVIEW_HEAD"
    ```
 
-2. Only an explicit `Ready to merge? Yes` approves that SHA. `No` and `With fixes` leave findings open.
+2. Only an explicit `Ready to merge? Yes` approves that SHA. `No` and `With fixes` leave findings open. Record `REVIEW_HEAD` and each reviewer verdict in the progress ledger as they occur; when approved, record the approved SHA. After any compaction or resume, recover these values from the ledger before continuing the gate.
 3. Send the complete final finding set to one fixer. The fix report must include the covering command, exit status, and relevant output.
 4. After fixes, generate a delta package. Resume the same final reviewer thread:
 
@@ -237,7 +237,7 @@ final whole-branch review. When you fill a reviewer template:
    ```
 
 5. Repeat the fix, verification, delta-package, and same-thread review loop until the reviewer explicitly approves `REVIEW_HEAD`.
-6. Immediately before invoking `finishing-a-development-branch`, require `git rev-parse HEAD` to equal the approved SHA. If it differs, package that delta and resume the same reviewer thread; do not complete the branch.
+6. Immediately before invoking `finishing-a-development-branch`, require `git rev-parse HEAD` to equal the approved SHA. If it differs, run covering verification for that delta, package it, and resume the same reviewer thread; do not complete the branch.
 
 ## File Handoffs
 

@@ -28,8 +28,11 @@ assert_before() {
 }
 
 assert_contains "$brainstorming" \
-  "If the caller named one approved continuation before invoking this skill, invoke it after the user approves the written spec; otherwise invoke \`writing-plans\`." \
+  "If the invoking prompt named exactly one continuation skill before this skill was invoked, invoke it after the user approves the written spec; otherwise invoke \`writing-plans\`." \
   "brainstorming supports a caller continuation and preserves its default"
+assert_contains "$brainstorming" \
+  '"Invoke continuation\n(default: writing-plans)" [shape=doublecircle];' \
+  "brainstorming graph represents the continuation seam"
 assert_contains "$brainstorming" \
   "This changes only the terminal handoff; every preceding step and approval gate still applies." \
   "brainstorming continuation cannot bypass approval"
@@ -40,7 +43,7 @@ assert_before "$brainstorming" "**User Review Gate:**" "**Continuation contract:
   "brainstorming resolves continuation after written-spec approval"
 
 assert_contains "$writing_plans" \
-  "If the caller named one approved continuation before invoking this skill, invoke it after saving and self-reviewing the plan instead of offering the execution choices below. Otherwise use the Execution Handoff below unchanged." \
+  "If the invoking prompt named exactly one continuation skill before this skill was invoked, invoke it after saving and self-reviewing the plan instead of offering the execution choices below. Otherwise use the Execution Handoff below unchanged." \
   "writing-plans supports a caller continuation and preserves its default"
 assert_before "$writing_plans" "## Self-Review" "## Continuation" \
   "writing-plans resolves continuation after self-review"

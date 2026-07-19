@@ -42,11 +42,14 @@ assert_contains 'REVIEW_HEAD=$(git rev-parse HEAD)' "final review resolves an ex
 assert_contains 'Set `MERGE_BASE` to `git merge-base <target-branch> HEAD`, where `<target-branch>` is the branch this work will merge into.' "final review defines the merge base"
 assert_contains 'scripts/review-package "$MERGE_BASE" "$REVIEW_HEAD"' "whole-branch package uses the exact head"
 assert_contains 'Only an explicit `Ready to merge? Yes` approves that SHA.' "approval verdict is explicit"
+assert_contains 'Record `REVIEW_HEAD` and each reviewer verdict in the progress ledger as they occur; when approved, record the approved SHA.' "final gate records durable approval state"
+assert_contains 'After any compaction or resume, recover these values from the ledger before continuing the gate.' "final gate recovers durable approval state"
 assert_contains 'Send the complete final finding set to one fixer.' "final findings are fixed together"
 assert_contains 'covering command, exit status, and relevant output' "fix verification carries evidence"
 assert_contains 'scripts/review-package "$REVIEW_HEAD" "$NEW_HEAD"' "re-review receives a fresh delta package"
 assert_contains 'Resume the same final reviewer thread' "re-review stays in one thread"
 assert_contains 'require `git rev-parse HEAD` to equal the approved SHA' "branch completion checks the approved head"
+assert_contains 'run covering verification for that delta, package it, and resume the same reviewer thread' "late deltas are verified before re-review"
 
 assert_not_contains \
   '"Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Use superpowers:finishing-a-development-branch";' \

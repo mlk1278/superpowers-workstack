@@ -140,6 +140,46 @@ BRIEF
         diff -u "$expected_brief" "$brief_path" || true
     fi
 
+    cat > "$repo/template-plan.md" <<'PLAN'
+# Template Plan
+
+## Global Constraints
+
+- Preserve the public contract.
+
+---
+
+### Task 1: First template task
+
+Implement only the first task.
+
+### Task 2: Neighbor template task
+
+This must not enter Task 1's brief.
+PLAN
+
+    local template_brief="$TEST_ROOT/template-brief.md"
+    local expected_template_brief="$TEST_ROOT/expected-template-brief.md"
+    "$SDD_SCRIPTS/task-brief" "$repo/template-plan.md" 1 "$template_brief" >/dev/null
+    cat > "$expected_template_brief" <<'BRIEF'
+## Global Constraints
+
+- Preserve the public contract.
+
+---
+
+### Task 1: First template task
+
+Implement only the first task.
+
+BRIEF
+    if cmp -s "$template_brief" "$expected_template_brief"; then
+        pass "task-brief handles canonical level-three task headings without leakage"
+    else
+        fail "task-brief handles canonical level-three task headings without leakage"
+        diff -u "$expected_template_brief" "$template_brief" || true
+    fi
+
     local missing_output missing_status
     set +e
     missing_output="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" plan.md 9 "$repo/missing.md" 2>&1)"

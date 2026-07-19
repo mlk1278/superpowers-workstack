@@ -29,11 +29,12 @@ awk -v n="$n" '
   !infence && /^##[ \t]+Global Constraints[ \t]*$/ {
     inglobal = 1
   }
-  !infence && inglobal && /^##[ \t]+/ &&
+  !infence && inglobal && /^#[#]?[ \t]+/ &&
       $0 !~ /^##[ \t]+Global Constraints[ \t]*$/ {
     inglobal = 0
   }
   !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {
+    inglobal = 0
     intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
     if (intask) foundtask = 1
   }
