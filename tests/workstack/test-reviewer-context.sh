@@ -40,6 +40,8 @@ for prompt in "$task_prompt" "$final_prompt"; do
     "review nuance cannot pre-judge findings"
 done
 
+assert_contains "$task_prompt" 'This guidance read is an explicit exception to the later limits on' \
+  "task reviewer may read guidance despite diff-only limits"
 assert_contains "$sdd" 'Do not read it' \
   "SDD orchestrator does not consume reviewer guidance"
 assert_contains "$sdd" 'while orchestrating or pass it to implementers, fixers, explorers, planners,' \
@@ -52,6 +54,8 @@ assert_contains "$spec" 'Only the reviewer reads this file.' \
   "workflow specification makes guidance reviewer-only"
 assert_contains "$spec" 'The orchestrator may also provide concise task- or slice-specific review nuance.' \
   "workflow specification permits scoped review nuance"
+assert_contains "$spec" '- `docs/REVIEW-GUIDANCE.md` when the project provides it;' \
+  "UX reviewers receive project review guidance"
 assert_contains "$spec" 'It must label `docs/REVIEW-GUIDANCE.md` as reviewer-only and prohibit every non-review role from loading it.' \
   "project agent rules must preserve reviewer-only context"
 assert_not_contains "$implementer_prompt" 'docs/REVIEW-GUIDANCE.md' \

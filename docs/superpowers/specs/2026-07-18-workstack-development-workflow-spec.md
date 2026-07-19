@@ -503,6 +503,7 @@ The requirement is decided in the specification or when the ready slice is plann
 
 The UX reviewer receives:
 
+- `docs/REVIEW-GUIDANCE.md` when the project provides it;
 - the specification's routes, state matrix, responsive behavior, accessibility requirements, copy, and visual criteria;
 - the exact slice head;
 - a running isolated environment;

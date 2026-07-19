@@ -30,6 +30,8 @@ Subagent (general-purpose):
     If `docs/REVIEW-GUIDANCE.md` exists at the repository root, read it now.
     This file is reviewer-only. Apply its project-wide review guidance and
     report any conflict with the task requirements instead of guessing.
+    This guidance read is an explicit exception to the later limits on
+    broader codebase inspection.
 
     ## Task-Specific Review Nuance
 
