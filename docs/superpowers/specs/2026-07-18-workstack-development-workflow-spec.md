@@ -231,7 +231,8 @@ The initial permitted core fixes are limited to:
 - allowing a caller-supplied continuation after brainstorming and plan writing, so WorkStack can insert spec verification and slice orchestration;
 - ensuring plan-wide global constraints are present in every extracted implementer brief;
 - making broad final review a closed fix-and-re-review gate rather than a one-pass report;
-- allowing reviewers, and only reviewers, to load canonical project review guidance and scoped task nuance.
+- allowing reviewers, and only reviewers, to load canonical project review guidance and scoped task nuance;
+- allowing a caller-declared completion contract in branch finishing, so an orchestrated slice executes its gated PR route without an interactive options menu (the menu remains the default when no contract is declared). *Added 2026-07-19 from the instructional-conflict audit; user-approved.*
 
 Any broader core rewrite requires a new approved specification.
 
