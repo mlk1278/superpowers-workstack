@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to execute each ready slice task-by-task. A worker receives one extracted task brief, not this whole plan.
 
-**Status:** Active — S1 complete; S2 landed (fresh-agent eval evidence consolidated into S3); S3 fully detailed and ready for subagent-driven execution (Tasks 8–13, including the conflict-audit resolutions); S4–S6 remain planning checkpoints; spec §6.3 fifth-divergence amendment user-approved 2026-07-19
+**Status:** Active — S1 complete; S2 landed; S3 landed (Tasks 8–12 on `main` at `195f108`; Task 13 fresh-agent evals and the independent S3 gate/PR waived by the user 2026-07-19 in favor of a direct in-session review with the full deterministic suite green); next: Checkpoint C4; S4–S6 remain planning checkpoints; spec §6.3 fifth-divergence amendment user-approved 2026-07-19
 
 **Plan owner:** Top-level WorkStack workflow orchestrator
 
@@ -73,6 +73,8 @@
 | 2026-07-19 | Do not edit the greedy `brainstorming`/`using-superpowers` trigger descriptions now; rely on entry-point routing, the precedence ladder, and S3 eval evidence, revisiting as a divergence only if the evals show routing thrash. | Greedy triggers are deliberate upstream behavior backing the harness acceptance test; narrow them with evidence, not preemptively. |
 | 2026-07-19 | Port the legacy refined fork's plan-authoring rules into fork-owned planning guidance at S4, condensed to rule plus one example each; do not port its three-thread review runtime, in-plan gate tasks, or verbosity. | The authoring rules are high-value and model-agnostic; the rest is the dispatch-and-prompt overhead this fork deliberately replaced with one combined task review and one whole-branch gate. |
 | 2026-07-19 | The UX gate captures evidence with a throwaway Playwright script (every pathway, step, and viewport screenshotted to ignored scratch) and judges it with one vision-capable routed reviewer, instead of agents navigating the browser interactively. | Manual in-browser navigation burns large token volumes per round and leaves no rerunnable evidence; a script reruns cheaply after every fix and the screenshot set is cheap to re-judge. |
+| 2026-07-19 | User waived the Task 13 fresh-agent evals and the independent S3 final-gate reviewer/PR; S3 landed as direct commits on `main` (`7796da9`..`195f108`) after an in-session review of every skill addition/modification with the full deterministic suite green. The Instructional-Conflict Register's eval-gated revisits (greedy `brainstorming`/`using-superpowers` triggers) now key off the first real quick-task/pilot runs instead of Task 13. | Schedule pressure; the S3 skill texts were plan-specified verbatim and had already been proactively reviewed during plan detailing. |
+| 2026-07-19 | Made the Codex packaging tar.gz path portable: GNU-tar owner flags beside the bsdtar spelling, umask-independent stage permission normalization, and a Python-based timestamp assertion in the packaging test. | The tar.gz branch and its test assertions were macOS/bsdtar-only and failed on Linux GNU tar, blocking S3 verification on this machine. |
 
 ## Context and Subagent Contract
 
@@ -147,7 +149,7 @@ Audited 2026-07-19 against the spec's hard invariants (§5), autonomy rules (§2
 |---|---|---|---|---|---|---|---|
 | S1 — Fork and routing foundation | Govern upstream divergence; resolve logical roles; package WorkStack skills | None assigned | None | Complete | `main` at `4694832` | None | PR #1 |
 | S2 — Core extension seams | Add continuation, task-brief, final-gate, and reviewer-context seams with regression evidence | None assigned | S1 merged | Landed; fresh-agent eval evidence consolidated into S3 | `main` at `7a392aa` | None | Direct push authorized by user |
-| S3 — Quick-task delivery loop | Ship `workstack-quick-task` plus the slice lifecycle it needs: whole-slice gate, conditional UX evidence, exact-head PR, monitor, closeout; capture fresh-agent seam evidence | None assigned | S2 merged | Ready (Tasks 8–13 detailed) | — | None | — |
+| S3 — Quick-task delivery loop | Ship `workstack-quick-task` plus the slice lifecycle it needs: whole-slice gate, conditional UX evidence, exact-head PR, monitor, closeout; capture fresh-agent seam evidence | None assigned | S2 merged | Landed (Tasks 8–12; Task 13 evals and gate/PR waived by user) | `main` at `195f108` | None | Direct commits authorized by user |
 | S4 — Living plan and planned-work entry points | Add living-plan schema, ledger/recovery, Linear reconciliation, `workstack-start`, and `workstack-resume` | None assigned | S3 merged | Deferred | — | Reserved surfaces likely | — |
 | S5 — Parallel delivery contracts | Add conflict graph, active contracts, and pruning | None assigned | S4 merged | Deferred | — | Producer | — |
 | S6 — Cutover, pilots, and closeout | Install refresh, `.workstack/agents.json`, `AGENTS.md` rewrite, pilots, transitional-skill removal, artifact pruning | None assigned | S5 merged | Deferred | — | Close all | — |
@@ -333,7 +335,9 @@ Audited 2026-07-19 against the spec's hard invariants (§5), autonomy rules (§2
 
 ---
 
-## Ready Slice S3 — Quick-Task Delivery Loop
+## Landed Slice S3 — Quick-Task Delivery Loop
+
+**Actual delivery (2026-07-19):** Tasks 8–12 landed as direct commits on `main` (`7796da9`..`195f108`). The user waived Task 13's fresh-agent evals and the independent final-gate reviewer/PR; in their place, an in-session review checked every skill addition/modification for simplicity, clarity, and coherence, and the full deterministic suite (all `tests/workstack/`, packaging, manifest, sync, divergence check) passed. A tar.gz packaging portability fix (bsdtar→GNU tar) was applied during that verification. The C4 trigger's "one real quick task" precondition remains outstanding.
 
 **Planning trigger:** S2 merged at `7a392aa`. Surfaces re-explored 2026-07-19: upstream SDD scripts (`task-brief`, `review-package`, `sdd-workspace`), the S2 final-gate seam, `finishing-a-development-branch`, the S1 packaging metadata precedence, and FSMCRM's transitional `workstack-quick-task`, `workstack-review`, `workstack-ux-gate`, and `workstack-pr-monitor` skills.
 
@@ -369,7 +373,7 @@ Audited 2026-07-19 against the spec's hard invariants (§5), autonomy rules (§2
 - Consumes: `workstack-agent-routing` role resolution (`scripts/resolve-agent --role implementer` and `--role reviewer`, per its SKILL.md); the SDD final-gate reviewer thread (resumed on post-gate deltas).
 - Produces: the skill name `workstack-pr-monitor` and its return contract — exact merge state (PR number, merged SHA, merge commit) returned to the caller, which owns post-merge reconciliation. Task 11 references this skill by name.
 
-- [ ] **Step 1: Write the failing test** at `tests/workstack/test-pr-monitor.sh` (mark executable):
+- [x] **Step 1: Write the failing test** at `tests/workstack/test-pr-monitor.sh` (mark executable):
 
 ```bash
 #!/usr/bin/env bash
@@ -426,12 +430,12 @@ echo "ok - committed OpenAI metadata present"
 echo "PASS"
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `bash tests/workstack/test-pr-monitor.sh`
 Expected: `not ok - skill file missing`, exit 1.
 
-- [ ] **Step 3: Write the skill** at `skills/workstack-pr-monitor/SKILL.md` with exactly this content:
+- [x] **Step 3: Write the skill** at `skills/workstack-pr-monitor/SKILL.md` with exactly this content:
 
 ```markdown
 ---
@@ -469,7 +473,7 @@ After the policy timeout on one head (default 60 minutes), or on explicit provid
 Immediately before merging, re-verify on the expected head: policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit — to the caller. The caller owns post-merge reconciliation.
 ```
 
-- [ ] **Step 4: Write the metadata** at `skills/workstack-pr-monitor/agents/openai.yaml`:
+- [x] **Step 4: Write the metadata** at `skills/workstack-pr-monitor/agents/openai.yaml`:
 
 ```yaml
 interface:
@@ -478,17 +482,17 @@ interface:
   default_prompt: "Use $workstack-pr-monitor to shepherd this pull request through merge."
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `bash tests/workstack/test-pr-monitor.sh`
 Expected: all `ok` lines, final `PASS`, exit 0.
 
-- [ ] **Step 6: Run the divergence check**
+- [x] **Step 6: Run the divergence check**
 
 Run: `python3 scripts/check-workstack-divergences.py`
 Expected: exit 0 (new `skills/workstack-*` directories are fork additions, not core divergences).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/workstack-pr-monitor tests/workstack/test-pr-monitor.sh
@@ -508,7 +512,7 @@ git commit -m "add workstack-pr-monitor skill"
 - Consumes: `workstack-agent-routing` reviewer resolution with `--reviewer-specialty ux`; reviewer-only `docs/REVIEW-GUIDANCE.md` semantics from the S2 seam.
 - Produces: the skill name `workstack-ux-gate` and its verdict contract — `Pass` bound to a head SHA, or `Changes Required` with component-level findings. Task 11 references this skill by name.
 
-- [ ] **Step 1: Write the failing test** at `tests/workstack/test-ux-gate.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh`: copy its shebang, `set -euo pipefail`, `repo_root` line, and the `assert_contains` and `assert_no_model_names` helper functions verbatim, then continue with:
+- [x] **Step 1: Write the failing test** at `tests/workstack/test-ux-gate.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh`: copy its shebang, `set -euo pipefail`, `repo_root` line, and the `assert_contains` and `assert_no_model_names` helper functions verbatim, then continue with:
 
 ```bash
 skill="$repo_root/skills/workstack-ux-gate/SKILL.md"
@@ -546,12 +550,12 @@ echo "ok - committed OpenAI metadata present"
 echo "PASS"
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `bash tests/workstack/test-ux-gate.sh`
 Expected: `not ok - skill file missing`, exit 1.
 
-- [ ] **Step 3: Write the skill** at `skills/workstack-ux-gate/SKILL.md` with exactly this content:
+- [x] **Step 3: Write the skill** at `skills/workstack-ux-gate/SKILL.md` with exactly this content:
 
 ```markdown
 ---
@@ -594,7 +598,7 @@ Route the finding set to the owning implementer thread, rerun the capture script
 - Do not manufacture states by editing app source. Isolated fixtures and seeded test data are fine; production or shared-user data is not.
 ```
 
-- [ ] **Step 4: Write the metadata** at `skills/workstack-ux-gate/agents/openai.yaml`:
+- [x] **Step 4: Write the metadata** at `skills/workstack-ux-gate/agents/openai.yaml`:
 
 ```yaml
 interface:
@@ -603,12 +607,12 @@ interface:
   default_prompt: "Use $workstack-ux-gate to verify the changed surfaces against the approved UX criteria."
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `bash tests/workstack/test-ux-gate.sh`
 Expected: all `ok` lines, final `PASS`, exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/workstack-ux-gate tests/workstack/test-ux-gate.sh
@@ -628,7 +632,7 @@ git commit -m "add workstack-ux-gate skill"
 - Consumes: the S1 divergence governance (`workstack/upstream-divergences.json` schema and `scripts/check-workstack-divergences.py`); the spec §6.3 amendment authorizing this fifth divergence.
 - Produces: the completion-contract clause quoted below, which Task 11's `workstack-quick-task` invokes by declaring the pull-request completion route. The exact clause sentences are load-bearing for the test and for callers.
 
-- [ ] **Step 1: Write the failing test** at `tests/workstack/test-completion-contract.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` preamble (shebang, `set -euo pipefail`, `repo_root`) and its `assert_contains` helper copied verbatim, then continue with:
+- [x] **Step 1: Write the failing test** at `tests/workstack/test-completion-contract.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` preamble (shebang, `set -euo pipefail`, `repo_root`) and its `assert_contains` helper copied verbatim, then continue with:
 
 ```bash
 skill="$repo_root/skills/finishing-a-development-branch/SKILL.md"
@@ -651,30 +655,30 @@ echo "ok - divergence allowlisted"
 echo "PASS"
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `bash tests/workstack/test-completion-contract.sh`
 Expected: `not ok - completion contract exists`, exit 1.
 
-- [ ] **Step 3: Add the seam.** In `skills/finishing-a-development-branch/SKILL.md`, insert this paragraph immediately after the `**Announce at start:**` line, changing nothing else in the file:
+- [x] **Step 3: Add the seam.** In `skills/finishing-a-development-branch/SKILL.md`, insert this paragraph immediately after the `**Announce at start:**` line, changing nothing else in the file:
 
 ```markdown
 **Completion contract:** If the invoking prompt declared exactly one completion route (optionally naming the target base branch) before this skill was invoked, run the Step 1 test verification, then execute that route and its cleanup directly instead of presenting the options below. An undeclared or ambiguous route falls through to the normal options. This changes only who chooses the option; every verification and cleanup rule still applies.
 ```
 
-- [ ] **Step 4: Allowlist the divergence.** Add `skills/finishing-a-development-branch/SKILL.md` to `workstack/upstream-divergences.json` with the reason: "caller-declared completion contract so orchestrated slices reach their gated PR without an interactive options menu; menu remains the default".
+- [x] **Step 4: Allowlist the divergence.** Add `skills/finishing-a-development-branch/SKILL.md` to `workstack/upstream-divergences.json` with the reason: "caller-declared completion contract so orchestrated slices reach their gated PR without an interactive options menu; menu remains the default".
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `bash tests/workstack/test-completion-contract.sh`
 Expected: all `ok` lines, final `PASS`, exit 0.
 
-- [ ] **Step 6: Run the divergence and regression checks**
+- [x] **Step 6: Run the divergence and regression checks**
 
 Run: `python3 scripts/check-workstack-divergences.py && bash tests/workstack/test-upstream-divergences.sh && bash tests/workstack/test-final-review-gate.sh`
 Expected: exit 0 / `PASS` from each.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md workstack/upstream-divergences.json tests/workstack/test-completion-contract.sh
@@ -694,7 +698,7 @@ git commit -m "add completion contract seam to finishing-a-development-branch"
 - Consumes: `workstack-agent-routing` (role resolution), `workstack-pr-monitor` (Task 8), `workstack-ux-gate` (Task 9), the completion-contract seam (Task 10), upstream `using-git-worktrees` (declared-preference behavior), `writing-plans` task format, and `subagent-driven-development` (including its final-gate seam and `scripts/task-brief` compatibility: the mini-plan must contain `## Global Constraints` and `### Task 1:` headings).
 - Produces: the public entry point `workstack-quick-task`. Later slices (S4's `workstack-start`/`workstack-resume`) are referenced by name in its promotion clause and must keep those names.
 
-- [ ] **Step 1: Write the failing test** at `tests/workstack/test-quick-task.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` (shebang, `set -euo pipefail`, `repo_root`, `assert_contains`, `assert_no_model_names` — copied verbatim) plus the `assert_before` helper copied verbatim from the committed `tests/workstack/test-continuation-seams.sh`, then continue with:
+- [x] **Step 1: Write the failing test** at `tests/workstack/test-quick-task.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` (shebang, `set -euo pipefail`, `repo_root`, `assert_contains`, `assert_no_model_names` — copied verbatim) plus the `assert_before` helper copied verbatim from the committed `tests/workstack/test-continuation-seams.sh`, then continue with:
 
 ```bash
 skill="$repo_root/skills/workstack-quick-task/SKILL.md"
@@ -732,12 +736,12 @@ echo "ok - committed OpenAI metadata present"
 echo "PASS"
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `bash tests/workstack/test-quick-task.sh`
 Expected: `not ok - skill file missing`, exit 1.
 
-- [ ] **Step 3: Write the skill** at `skills/workstack-quick-task/SKILL.md` with exactly this content:
+- [x] **Step 3: Write the skill** at `skills/workstack-quick-task/SKILL.md` with exactly this content:
 
 ```markdown
 ---
@@ -787,7 +791,7 @@ After merge: remove the worktree and branch, delete the mini-plan and SDD scratc
 A "quick task" that keeps growing (stop and promote) · creating a ticket or spec to mirror a tiny change · skipping review because the change is small · reporting done at PR-open · leaving scratch or the worktree behind after merge.
 ```
 
-- [ ] **Step 4: Write the metadata** at `skills/workstack-quick-task/agents/openai.yaml`:
+- [x] **Step 4: Write the metadata** at `skills/workstack-quick-task/agents/openai.yaml`:
 
 ```yaml
 interface:
@@ -796,17 +800,17 @@ interface:
   default_prompt: "Use $workstack-quick-task to ship this small change end to end."
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `bash tests/workstack/test-quick-task.sh`
 Expected: all `ok` lines, final `PASS`, exit 0.
 
-- [ ] **Step 6: Run the neighboring seam tests** (the entry point leans on them)
+- [x] **Step 6: Run the neighboring seam tests** (the entry point leans on them)
 
 Run: `bash tests/workstack/test-continuation-seams.sh && bash tests/workstack/test-final-review-gate.sh && bash tests/workstack/test-reviewer-context.sh`
 Expected: `PASS` from each.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/workstack-quick-task tests/workstack/test-quick-task.sh
@@ -826,7 +830,7 @@ git commit -m "add workstack-quick-task public entry point"
 - Consumes: the S1 packaging rule (committed `agents/openai.yaml` takes precedence; no external metadata entry required for fork-owned skills).
 - Produces: `workstack/AGENTS-SNIPPET.md`, the canonical draft of the consuming project's two-paragraph workflow summary. S4–S6 tasks update this file; S6 copies it into FSMCRM `AGENTS.md`.
 
-- [ ] **Step 1: Add packaging assertions.** In `tests/codex/test-package-codex-plugin.sh`, after the existing `workstack-agent-routing` assertions, add:
+- [x] **Step 1: Add packaging assertions.** In `tests/codex/test-package-codex-plugin.sh`, after the existing `workstack-agent-routing` assertions, add:
 
 ```bash
 for ws_skill in workstack-quick-task workstack-pr-monitor workstack-ux-gate; do
@@ -835,12 +839,12 @@ for ws_skill in workstack-quick-task workstack-pr-monitor workstack-ux-gate; do
 done
 ```
 
-- [ ] **Step 2: Run the packaging test**
+- [x] **Step 2: Run the packaging test**
 
 Run: `bash tests/codex/test-package-codex-plugin.sh`
 Expected: exit 0. If an assertion fails, fix the packaging script only within the S1 metadata-precedence behavior (committed source metadata first, external second); do not change package shape otherwise.
 
-- [ ] **Step 3: Write the workflow summary draft** at `workstack/AGENTS-SNIPPET.md` with exactly this content:
+- [x] **Step 3: Write the workflow summary draft** at `workstack/AGENTS-SNIPPET.md` with exactly this content:
 
 ```markdown
 # WorkStack Workflow Summary (draft — updated each slice)
@@ -858,7 +862,7 @@ Three entry points — enter at the first state you don't have:
 - `workstack-resume`: anything already specced or planned, through the next valid step to merge.
 ```
 
-- [ ] **Step 4: Write its test** at `tests/workstack/test-workflow-summary.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` preamble (shebang, `set -euo pipefail`, `repo_root`) and its `assert_contains` helper copied verbatim, then continue with:
+- [x] **Step 4: Write its test** at `tests/workstack/test-workflow-summary.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` preamble (shebang, `set -euo pipefail`, `repo_root`) and its `assert_contains` helper copied verbatim, then continue with:
 
 ```bash
 summary="$repo_root/workstack/AGENTS-SNIPPET.md"
@@ -876,12 +880,12 @@ echo "ok - no phase vocabulary"
 echo "PASS"
 ```
 
-- [ ] **Step 5: Run the new test and the manifest/package suite**
+- [x] **Step 5: Run the new test and the manifest/package suite**
 
 Run: `bash tests/workstack/test-workflow-summary.sh && bash tests/codex/test-package-codex-plugin.sh && bash tests/codex/test-marketplace-manifest.sh && bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`
 Expected: exit 0 from each.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/codex/test-package-codex-plugin.sh workstack/AGENTS-SNIPPET.md tests/workstack/test-workflow-summary.sh
@@ -889,6 +893,8 @@ git commit -m "package new workstack skills and add workflow summary draft"
 ```
 
 ### Task 13: Record fresh-agent behavioral evidence
+
+**WAIVED 2026-07-19 by user decision (see Decision Log) — do not execute.** Behavioral evidence now comes from real usage: the first quick-task run and the S6 pilots. The routing-thrash observation feeding the Instructional-Conflict Register moves there too.
 
 **Files:**
 
@@ -911,15 +917,12 @@ git commit -m "package new workstack skills and add workflow summary draft"
 
 ### S3 Slice Verification and Gate
 
-- [ ] Record the slice base SHA before Task 8 begins (`git rev-parse HEAD`, expected `7a392aa` or the current `main` head).
-- [ ] Run `bash tests/workstack/test-pr-monitor.sh`, `bash tests/workstack/test-ux-gate.sh`, `bash tests/workstack/test-completion-contract.sh`, `bash tests/workstack/test-quick-task.sh`, and `bash tests/workstack/test-workflow-summary.sh`; expect `PASS` from each.
-- [ ] Run the pre-existing suite: `bash tests/workstack/test-upstream-divergences.sh`, `bash tests/workstack/test-agent-routing.sh`, `bash tests/workstack/test-continuation-seams.sh`, `bash tests/workstack/test-final-review-gate.sh`, `bash tests/workstack/test-reviewer-context.sh`, `bash tests/codex/test-package-codex-plugin.sh`, `bash tests/codex/test-marketplace-manifest.sh`, `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`; expect exit 0 from each.
-- [ ] Run `python3 scripts/check-workstack-divergences.py`; expect exit 0 with no new core divergences.
-- [ ] Confirm all seven Task 13 verdict files exist with explicit verdicts; escalate any `FAIL` — and any observed routing thrash — before gating.
-- [ ] Generate one review package from the recorded slice base through current HEAD (`skills/subagent-driven-development/scripts/review-package BASE HEAD`).
-- [ ] Dispatch one fresh independent final-gate reviewer (resolved via `workstack-agent-routing` with specialty `final-gate`; identity must differ from every S3 author) with the specification (§7.1, §11.3, §12, §13), this slice section, the verification log, and the diff package by path.
-- [ ] Fix the complete finding set with one fixer, rerun covering verification, and resume the same reviewer thread until it approves the current HEAD.
-- [ ] Open exactly one PR for S3 against `main` and merge only its reviewed head. Do not refresh FSMCRM's project-local install from this merge (per the 2026-07-19 collision decision).
+- [x] Record the slice base SHA before Task 8 begins: `7a392aa` (with docs commits `d700a20`/`ef3cbbf` between base and Task 8).
+- [x] Run `bash tests/workstack/test-pr-monitor.sh`, `bash tests/workstack/test-ux-gate.sh`, `bash tests/workstack/test-completion-contract.sh`, `bash tests/workstack/test-quick-task.sh`, and `bash tests/workstack/test-workflow-summary.sh`; all `PASS` 2026-07-19.
+- [x] Run the pre-existing suite: `bash tests/workstack/test-upstream-divergences.sh`, `bash tests/workstack/test-agent-routing.sh`, `bash tests/workstack/test-continuation-seams.sh`, `bash tests/workstack/test-final-review-gate.sh`, `bash tests/workstack/test-reviewer-context.sh`, `bash tests/codex/test-package-codex-plugin.sh`, `bash tests/codex/test-marketplace-manifest.sh`, `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`; all exit 0 2026-07-19 (packaging test after the tar.gz portability fix).
+- [x] Run `python3 scripts/check-workstack-divergences.py`; exit 0, no new core divergences.
+- ~~Confirm all seven Task 13 verdict files exist~~ — Task 13 waived by user 2026-07-19 (see Decision Log); routing-thrash observation deferred to the first real quick-task run.
+- ~~Review package / independent final-gate reviewer / reviewer loop / S3 PR~~ — waived by user 2026-07-19; replaced by an in-session review of all skill additions/modifications with the deterministic suite green. Direct commits to `main` authorized (S2 precedent). FSMCRM's project-local install was not refreshed (per the 2026-07-19 collision decision).
 
 ---
 
