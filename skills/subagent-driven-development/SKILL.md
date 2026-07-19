@@ -62,7 +62,14 @@ digraph process {
 
     "Read plan, note context and global constraints, create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
+    "Record exact REVIEW_HEAD; generate whole-branch package" [shape=box];
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
+    "Final reviewer approves REVIEW_HEAD with Ready to merge? Yes?" [shape=diamond];
+    "Dispatch one fixer with complete final finding set" [shape=box];
+    "Run covering verification and record evidence" [shape=box];
+    "Record NEW_HEAD; generate REVIEW_HEAD..NEW_HEAD delta package" [shape=box];
+    "Resume same final reviewer thread" [shape=box];
+    "Current HEAD equals approved SHA?" [shape=diamond];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -77,8 +84,17 @@ digraph process {
     "Task reviewer reports spec ✅ and quality approved?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Use superpowers:finishing-a-development-branch";
+    "More tasks remain?" -> "Record exact REVIEW_HEAD; generate whole-branch package" [label="no"];
+    "Record exact REVIEW_HEAD; generate whole-branch package" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)";
+    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Final reviewer approves REVIEW_HEAD with Ready to merge? Yes?";
+    "Final reviewer approves REVIEW_HEAD with Ready to merge? Yes?" -> "Dispatch one fixer with complete final finding set" [label="no"];
+    "Dispatch one fixer with complete final finding set" -> "Run covering verification and record evidence";
+    "Run covering verification and record evidence" -> "Record NEW_HEAD; generate REVIEW_HEAD..NEW_HEAD delta package";
+    "Record NEW_HEAD; generate REVIEW_HEAD..NEW_HEAD delta package" -> "Resume same final reviewer thread";
+    "Resume same final reviewer thread" -> "Final reviewer approves REVIEW_HEAD with Ready to merge? Yes?";
+    "Final reviewer approves REVIEW_HEAD with Ready to merge? Yes?" -> "Current HEAD equals approved SHA?" [label="yes"];
+    "Current HEAD equals approved SHA?" -> "Record NEW_HEAD; generate REVIEW_HEAD..NEW_HEAD delta package" [label="no"];
+    "Current HEAD equals approved SHA?" -> "Use superpowers:finishing-a-development-branch" [label="yes"];
 }
 ```
 
@@ -200,21 +216,28 @@ final whole-branch review. When you fill a reviewer template:
   contradiction: present the finding and the plan text, ask which governs.
   Do not dismiss the finding because the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking.
-- The final whole-branch review gets a package too: run
-  `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the
-  branch started from, e.g. `git merge-base main HEAD`) and include the
-  printed path in the final review dispatch, so the final reviewer reads
-  one file instead of re-deriving the branch diff with git commands.
-- Every fix dispatch carries the implementer contract: the fix subagent
-  re-runs the tests covering its change and reports the results. Name the
-  covering test files in the dispatch — a one-line fix does not need the
-  whole suite. Before re-dispatching the reviewer, confirm the fix report
-  contains the covering tests, the command run, and the output; dispatch
-  the re-review once all three are present.
-- If the final whole-branch review returns findings, dispatch ONE fix
-  subagent with the complete findings list — not one fixer per finding.
-  Per-finding fixers each rebuild context and re-run suites; a real
-  session's final-review fix wave cost more than all its tasks combined.
+
+### Final whole-branch gate
+
+1. Using the branch's recorded `MERGE_BASE`, resolve and package an immutable head, then name that SHA in the final review dispatch:
+
+   ```bash
+   REVIEW_HEAD=$(git rev-parse HEAD)
+   scripts/review-package "$MERGE_BASE" "$REVIEW_HEAD"
+   ```
+
+2. Only an explicit `Ready to merge? Yes` approves that SHA. `No` and `With fixes` leave findings open.
+3. Send the complete final finding set to one fixer. The fix report must include the covering command, exit status, and relevant output.
+4. After fixes, generate a delta package. Resume the same final reviewer thread:
+
+   ```bash
+   NEW_HEAD=$(git rev-parse HEAD)
+   scripts/review-package "$REVIEW_HEAD" "$NEW_HEAD"
+   REVIEW_HEAD=$NEW_HEAD
+   ```
+
+5. Repeat the fix, verification, delta-package, and same-thread review loop until the reviewer explicitly approves `REVIEW_HEAD`.
+6. Immediately before invoking `finishing-a-development-branch`, require `git rev-parse HEAD` to equal the approved SHA. If it differs, package that delta and resume the same reviewer thread; do not complete the branch.
 
 ## File Handoffs
 
@@ -326,9 +349,16 @@ Task reviewer: Spec ✅. Task quality: Approved.
 ...
 
 [After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[Record exact REVIEW_HEAD, generate the whole-branch package, dispatch final code-reviewer]
+Final reviewer: Two Important findings. Ready to merge? With fixes.
 
+[One fixer receives the complete final finding set]
+Fixer: Fixed both findings. Covering command completed with exit status 0; relevant output recorded.
+
+[Record NEW_HEAD, generate the REVIEW_HEAD..NEW_HEAD delta package, resume the same final reviewer thread]
+Final reviewer: Findings resolved. Ready to merge? Yes — approved NEW_HEAD.
+
+[Confirm git rev-parse HEAD equals the approved SHA, then use finishing-a-development-branch]
 Done!
 ```
 
@@ -387,6 +417,10 @@ Done!
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
   the ledger (and `git log`) after any compaction or resume
+- Dispatch final review against an unresolved symbolic `HEAD`
+- Split one final finding set across multiple fixers
+- Start a new reviewer thread for final re-review
+- Invoke `finishing-a-development-branch` with open final findings, a verdict other than `Ready to merge? Yes`, or a current HEAD different from the approved SHA
 
 **If subagent asks questions:**
 - Answer clearly and completely
