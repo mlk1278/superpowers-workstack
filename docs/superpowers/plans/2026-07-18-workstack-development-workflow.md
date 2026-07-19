@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to execute each ready slice task-by-task. A worker receives one extracted task brief, not this whole plan.
 
-**Status:** Active — S1 complete; S2 landed; S3 landed (Tasks 8–12 on `main` at `195f108`; Task 13 fresh-agent evals and the independent S3 gate/PR waived by the user 2026-07-19 in favor of a direct in-session review with the full deterministic suite green); next: Checkpoint C4; S4–S6 remain planning checkpoints; spec §6.3 fifth-divergence amendment user-approved 2026-07-19
+**Status:** Active — S1 complete; S2 landed; S3 landed (Tasks 8–12 on `main` at `195f108`; Task 13 fresh-agent evals and the independent S3 gate/PR waived by the user 2026-07-19 in favor of a direct in-session review with the full deterministic suite green); S4–S6 fully detailed 2026-07-19 by user direction (planning checkpoints C4–C6 retired; merge-order execution dependencies retained); next: execute S4 (Tasks 14–19); spec §6.3 fifth-divergence amendment user-approved 2026-07-19
 
 **Plan owner:** Top-level WorkStack workflow orchestrator
 
@@ -12,7 +12,7 @@
 
 **Goal:** Deliver a maintainable WorkStack fork of current Superpowers with centralized agent routing, three simple project entry points, living-plan delivery slices, closed review and PR loops, and recoverable parallel coordination.
 
-**Architecture:** Keep upstream Superpowers as the inner implementation engine and add WorkStack policy as wrapper skills and small deterministic helpers. Permit only the documented core seams. Distribute the shared skill tree project-locally from the maintained fork rather than relying on a global plugin install. Detail only the current dependency frontier; re-explore and plan later slices after their prerequisites merge.
+**Architecture:** Keep upstream Superpowers as the inner implementation engine and add WorkStack policy as wrapper skills and small deterministic helpers. Permit only the documented core seams. Distribute the shared skill tree project-locally from the maintained fork rather than relying on a global plugin install. Detail only the current dependency frontier; re-explore and plan later slices after their prerequisites merge. *(Frontier-only detailing waived for S4–S6 by user direction 2026-07-19 — see Decision Log; each slice re-verifies its named surfaces before dispatch.)*
 
 **Tech stack:** Markdown skills, POSIX/Bash test scripts, Python 3 standard library for deterministic configuration resolution, Git/GitHub, and existing Superpowers test infrastructure.
 
@@ -75,6 +75,11 @@
 | 2026-07-19 | The UX gate captures evidence with a throwaway Playwright script (every pathway, step, and viewport screenshotted to ignored scratch) and judges it with one vision-capable routed reviewer, instead of agents navigating the browser interactively. | Manual in-browser navigation burns large token volumes per round and leaves no rerunnable evidence; a script reruns cheaply after every fix and the screenshot set is cheap to re-judge. |
 | 2026-07-19 | User waived the Task 13 fresh-agent evals and the independent S3 final-gate reviewer/PR; S3 landed as direct commits on `main` (`7796da9`..`195f108`) after an in-session review of every skill addition/modification with the full deterministic suite green. The Instructional-Conflict Register's eval-gated revisits (greedy `brainstorming`/`using-superpowers` triggers) now key off the first real quick-task/pilot runs instead of Task 13. | Schedule pressure; the S3 skill texts were plan-specified verbatim and had already been proactively reviewed during plan detailing. |
 | 2026-07-19 | Made the Codex packaging tar.gz path portable: GNU-tar owner flags beside the bsdtar spelling, umask-independent stage permission normalization, and a Python-based timestamp assertion in the packaging test. | The tar.gz branch and its test assertions were macOS/bsdtar-only and failed on Linux GNU tar, blocking S3 verification on this machine. |
+| 2026-07-19 | User directed planning the full remainder in one pass: C4–C6 retired and replaced by detailed ready slices S4–S6; execution keeps merge-order dependencies (S4 → S5 → S6) and each slice re-verifies its named surfaces before dispatch. The C4/C5 behavioral triggers (first real quick task; first sequential slice) are demoted from planning preconditions to pilot evidence gathered in S6. | Schedule pressure; S4's skill designs are authored verbatim in this plan, so S5/S6 plan against known interfaces rather than guesses. Planned against spec digest, FSMCRM transitional-skill extraction, and legacy refined-fork rules re-explored 2026-07-19. |
+| 2026-07-19 | Bundle the living-plan format, plan-authoring, and active-contract reference docs inside `skills/workstack-resume/` (supporting files beside SKILL.md) rather than under `workstack/`. | `workstack/` docs are not packaged or installed project-locally; supporting files inside a skill directory travel with every harness install, and `workstack-resume` is the natural single owner of the plan lifecycle. |
+| 2026-07-19 | `workstack-slice-gate` ships thin: it supplies the slice-level reviewer route, review inputs, and checklist, and defers all gate mechanics (`REVIEW_HEAD`, delta packaging, same-thread re-review) to SDD's final whole-branch gate. | Avoids duplicating the S2 closed-loop gate mechanics; one owner per mechanic per the Global Constraints. |
+| 2026-07-19 | At the S6 cutover, FSMCRM's transitional PR-provider mechanics (Codex/CodeRabbit tiers, helper-script commands, CI exit-code map, 180s/60-min timings, the `!simple` lane and its reserved exclusions) move into `.workstack/pr-policy.md`, and its model ladder moves into `.workstack/agents.json`. | Spec §13.3/§16.2 place provider and model specifics in project configuration; the battle-tested rules survive cutover without re-entering fork skills. |
+| 2026-07-19 | Resolve the S6 entry-point name collisions by renaming the three colliding transitional skills (`workstack-quick-task`, `workstack-ux-gate`, `workstack-pr-monitor`) to `legacy-workstack-*` in both FSMCRM mirrors before the install refresh; delete them with the rest of the transitional set only after pilots pass. | Keeps the proven fallback available during pilots (spec §1.1, §23) while letting fork entry points own the canonical names. |
 
 ## Context and Subagent Contract
 
@@ -150,9 +155,9 @@ Audited 2026-07-19 against the spec's hard invariants (§5), autonomy rules (§2
 | S1 — Fork and routing foundation | Govern upstream divergence; resolve logical roles; package WorkStack skills | None assigned | None | Complete | `main` at `4694832` | None | PR #1 |
 | S2 — Core extension seams | Add continuation, task-brief, final-gate, and reviewer-context seams with regression evidence | None assigned | S1 merged | Landed; fresh-agent eval evidence consolidated into S3 | `main` at `7a392aa` | None | Direct push authorized by user |
 | S3 — Quick-task delivery loop | Ship `workstack-quick-task` plus the slice lifecycle it needs: whole-slice gate, conditional UX evidence, exact-head PR, monitor, closeout; capture fresh-agent seam evidence | None assigned | S2 merged | Landed (Tasks 8–12; Task 13 evals and gate/PR waived by user) | `main` at `195f108` | None | Direct commits authorized by user |
-| S4 — Living plan and planned-work entry points | Add living-plan schema, ledger/recovery, Linear reconciliation, `workstack-start`, and `workstack-resume` | None assigned | S3 merged | Deferred | — | Reserved surfaces likely | — |
-| S5 — Parallel delivery contracts | Add conflict graph, active contracts, and pruning | None assigned | S4 merged | Deferred | — | Producer | — |
-| S6 — Cutover, pilots, and closeout | Install refresh, `.workstack/agents.json`, `AGENTS.md` rewrite, pilots, transitional-skill removal, artifact pruning | None assigned | S5 merged | Deferred | — | Close all | — |
+| S4 — Living plan and planned-work entry points | Add living-plan format and plan-authoring docs, `workstack-spec-review`, `workstack-slice-gate`, `workstack-start`, and `workstack-resume` (Tasks 14–19) | None assigned | S3 landed | Ready (planned 2026-07-19) | — | None | — |
+| S5 — Parallel delivery contracts | Add the active-contracts/parallel-eligibility doc and the `workstack-resume` parallel dispatch rows (Tasks 20–21) | None assigned | S4 merged | Ready (planned 2026-07-19) | — | Producer | — |
+| S6 — Cutover, pilots, and closeout | FSMCRM install refresh, `.workstack/agents.json` + `pr-policy.md`, `AGENTS.md` rewrite, entry-point proofs, pilots, transitional-skill removal, closeout (Tasks 22–27) | None assigned | S5 merged | Ready (planned 2026-07-19) | — | Close all | — |
 
 ---
 
@@ -926,25 +931,838 @@ git commit -m "package new workstack skills and add workflow summary draft"
 
 ---
 
-## Planning Checkpoints
+## Ready Slice S4 — Living Plan and Planned-Work Entry Points (was Checkpoint C4)
 
-### Checkpoint C4 — Living Plan and Planned-Work Entry Points
+**Planning note (2026-07-19):** Detailed by user direction ahead of the original trigger; the "one real quick task" precondition is demoted to S6 pilot evidence. Surfaces re-explored for this planning: the full spec (§7, §8, §9, §10, §11, §13, §17, §18 digested with section citations), the SDD scripts (`task-brief`, `review-package`, `sdd-workspace` CLIs confirmed), `using-git-worktrees` declared-preference behavior, `resolve-agent` flags/output, the S2 continuation clauses (verbatim), FSMCRM's transitional `workstack-write-spec`/`workstack-shepherd-phase`/`workstack-run-ticket`, and the legacy refined fork's `writing-specs` and plan-authoring rules.
 
-- **Trigger:** S3 merged and one real quick task has passed its gate, PR, and closeout.
-- **Outcome:** Implement the living-plan schema, slice index transitions, ignored worktree context, progress ledger, durable recovery order, coarse Linear reconciliation, and the `workstack-start` and `workstack-resume` wrappers calling upstream skills through the continuation seams and centralized routing. Restart/idempotency tests prove recovery from task, gate, PR, and post-merge states. Also add fork-owned plan-authoring guidance carrying the refined-fork rules named in the Instructional-Conflict Register (self-contained tasks, surgical references, code anchors, sweep enumeration, extraction test) — rule plus one example each, supplied to the plan-writing continuation, not edited into upstream `writing-plans`.
-- **Re-explore:** current SDD workspace scripts, worktree helpers, plan format, restart behavior, project-local skill discovery/trigger behavior in Claude Code and Codex, and — for the spec-writing stage — the legacy refined fork's `writing-specs` skill alongside FSMCRM's transitional `workstack-write-spec`.
+**Execution precondition:** S3 landed (satisfied). No behavioral trigger; execute next.
 
-### Checkpoint C5 — Parallel Slices and Active Contracts
+**Goal:** Ship the planned-work lifecycle: the `workstack-start` and `workstack-resume` public entry points, the two internal helpers they need (`workstack-spec-review`, `workstack-slice-gate`), and the two canonical reference docs (`living-plan-format.md`, `plan-authoring.md`) bundled inside `skills/workstack-resume/` so they install with the skill set — with deterministic tests, Codex packaging, and the workflow summary still two paragraphs.
 
-- **Trigger:** one sequential slice completes end-to-end through `workstack-resume`.
-- **Outcome:** Add dependency/conflict classification, separate worktrees, lightweight contract creation, producer/consumer status, stale audit, and owner-driven pruning. Keep parallelism outside the inner SDD loop, and scope `dispatching-parallel-agents` explicitly: WorkStack text cites it only for read-only exploration fan-out and independent contract-covered slices, never for implementation inside a slice (per the Instructional-Conflict Register).
-- **Re-explore:** FSMCRM migration/data-model ownership, real overlap patterns, and the transitional `workstack-batch-plan` contract and lane rules.
+**Acceptance signals:**
 
-### Checkpoint C6 — Cutover, Pilots, and Closeout
+- A fresh agent with an approved spec can reach a merged, reconciled slice using only `workstack-resume` and the skills its dispatch table names.
+- `workstack-resume`'s dispatch table is exhaustive: every recoverable state (spec-only, checkpoint, ready, mid-task, gated, PR open, merged-unreconciled, closeout, inconsistent) has its own row, and the idempotency sentences ("never redispatched", "monitored, never recreated", "reconciled, never reopened", "exactly once") are asserted by test.
+- The recovery authority order appears exactly once (in `workstack-resume`), the plan schema/gate taxonomy exactly once (`living-plan-format.md`), and the six refined-fork authoring rules exactly once (`plan-authoring.md`).
+- `workstack-slice-gate` adds slice inputs and checklist without restating SDD's gate mechanics.
+- All four new skills package for Codex with committed OpenAI metadata; divergence check passes (no new core changes); no concrete model names in any skill prose.
 
-- **Trigger:** contracts and closeout tests pass.
-- **Outcome:** Refresh FSMCRM's project-local fork installation with an explicit skill list that applies the register's exclusions (`executing-plans` is not installed), resolving entry-point name collisions with the transitional skills and the known `.codex` parity gaps (missing `workstack-agent-routing`, stray empty `.codex/skills/pr-monitor/`). Add project `.workstack/agents.json`, rewrite FSMCRM `AGENTS.md` to the two-paragraph summary plus three entry points — retaining the precedence ladder (user instructions over skills), the Testing Judgment section, the worktree rules, and one clarification that in dispatched subagents "your human partner" means the dispatching orchestrator — and prove the entry points from clean Claude Code and Codex sessions. Run the pilots — a quick task, a sequential multi-ticket effort with an intermediate planning checkpoint, and two independent parallel slices under a contract — while the transitional skills still exist. Only after pilots pass: remove the superseded transitional `workstack-*` skills, reconcile any Linear projects still structured by phases, fix specification gaps, close contracts, prune plans and worktrees, document the upstream-update procedure, and run one final conflict scan of the installed skill set against the Instructional-Conflict Register.
-- **Re-explore:** current FSMCRM skills and any changes made since commit `4787cf51`; preserve unrelated user work.
+**Design decisions for this slice:**
+
+- The reference docs live beside `workstack-resume`'s SKILL.md (see Decision Log) and are referenced as "this skill's `living-plan-format.md`" — never restated in other skills.
+- `workstack-start` names itself as the brainstorming continuation so draft-direction approval returns to its step 2 instead of flowing to `writing-plans`; `workstack-resume` names itself as the `writing-plans` continuation.
+- Ticket reconciliation is a `workstack-resume` dispatch-table step, not a skill: coarse Linear only (create/reconcile after spec approval, in-progress at slice start, close at merge — one batched operation each).
+- The progress ledger is a markdown file at `.superpowers/sdd/ledger.md` with a defined row format; no new script. "Write the transition before acting on it" is ported from the transitional shepherd.
+- Restart/idempotency evidence is deterministic (grep assertions on the dispatch table); behavioral proof lands in the S6 pilots (including the §22.7 mid-slice kill-and-resume probe).
+
+### Task 14: Add the workstack-spec-review skill
+
+**Files:**
+
+- Create: `skills/workstack-spec-review/SKILL.md`
+- Create: `skills/workstack-spec-review/agents/openai.yaml`
+- Create: `tests/workstack/test-spec-review.sh`
+
+**Interfaces:**
+
+- Consumes: `workstack-agent-routing` reviewer resolution with `--reviewer-specialty spec`.
+- Produces: the skill name `workstack-spec-review` and its verdict contract (`Approved` or blocking findings tied to exact sections). Task 16's `workstack-start` references it by name.
+
+- [ ] **Step 1: Write the failing test** at `tests/workstack/test-spec-review.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` (shebang, `set -euo pipefail`, `repo_root`, `assert_contains`, `assert_no_model_names` — copied verbatim), then continue with:
+
+```bash
+skill="$repo_root/skills/workstack-spec-review/SKILL.md"
+metadata="$repo_root/skills/workstack-spec-review/agents/openai.yaml"
+
+[ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
+
+assert_contains "$skill" "name: workstack-spec-review" "frontmatter name"
+assert_contains "$skill" "I'm running the spec review for <spec-path>." "announce line"
+assert_contains "$skill" "The reviewer never makes product decisions." "reviewer scope bound"
+assert_contains "$skill" "specialty \`spec\` via workstack-agent-routing" "routed spec reviewer"
+assert_contains "$skill" "fail closed on reviewer-independence errors" "independence fails closed"
+assert_contains "$skill" "a planner can plan from the spec without guessing" "approval bar"
+assert_contains "$skill" "\`Approved\` or blocking findings tied to exact sections" "verdict contract"
+assert_contains "$skill" "resume the same reviewer thread until \`Approved\`" "same-thread loop"
+assert_contains "$skill" "goes back to your human partner, not to the reviewer" "product decisions escalate"
+assert_contains "$skill" "Do not start Linear decomposition or implementation planning before user approval" "approval precedes planning"
+assert_no_model_names "$skill"
+
+[ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
+grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
+echo "ok - committed OpenAI metadata present"
+
+echo "PASS"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — `bash tests/workstack/test-spec-review.sh`; expect `not ok - skill file missing`, exit 1.
+
+- [ ] **Step 3: Write the skill** at `skills/workstack-spec-review/SKILL.md` with exactly this content:
+
+```markdown
+---
+name: workstack-spec-review
+description: Independent review loop for a draft WorkStack specification. Internal helper owned by workstack-start; returns Approved or blocking findings tied to exact sections.
+---
+
+# WorkStack Spec Review
+
+**Announce:** "I'm running the spec review for <spec-path>."
+
+**Entry:** a draft specification file and the approved direction it expands.
+**Exit:** the same file with reviewer approval recorded, ready for user approval. The reviewer never makes product decisions.
+
+## 1. Self-review
+
+Before dispatching, scan the draft yourself: placeholders and TODOs, internal consistency, numbered testable requirements, an empty open-questions section, and scope one implementation plan can build. Fix what you find.
+
+## 2. Independent reviewer
+
+Resolve one `reviewer` with specialty `spec` via workstack-agent-routing; fail closed on reviewer-independence errors. Send the approved direction and the spec by file path. The bar: a planner can plan from the spec without guessing product intent, ownership boundaries, or acceptance signals. The verdict is `Approved` or blocking findings tied to exact sections — nothing in between.
+
+## 3. Fix loop
+
+Fix blocking findings in the spec and resume the same reviewer thread until `Approved`. A finding that exposes a real product decision goes back to your human partner, not to the reviewer.
+
+## Rules
+
+- The reviewer validates completeness and consistency; product decisions belong to your human partner.
+- Do not start Linear decomposition or implementation planning before user approval of the reviewed spec.
+```
+
+- [ ] **Step 4: Write the metadata** at `skills/workstack-spec-review/agents/openai.yaml`:
+
+```yaml
+interface:
+  display_name: "WorkStack Spec Review"
+  short_description: "Independent review loop for a draft specification"
+  default_prompt: "Use $workstack-spec-review to review this specification."
+```
+
+- [ ] **Step 5: Run the test to verify it passes** — all `ok` lines, final `PASS`, exit 0.
+- [ ] **Step 6: Run `python3 scripts/check-workstack-divergences.py`** — exit 0.
+- [ ] **Step 7: Commit** — `git add skills/workstack-spec-review tests/workstack/test-spec-review.sh && git commit -m "add workstack-spec-review skill"`
+
+### Task 15: Add the workstack-slice-gate skill
+
+**Files:**
+
+- Create: `skills/workstack-slice-gate/SKILL.md`
+- Create: `skills/workstack-slice-gate/agents/openai.yaml`
+- Create: `tests/workstack/test-slice-gate.sh`
+
+**Interfaces:**
+
+- Consumes: `workstack-agent-routing` reviewer resolution with `--reviewer-specialty final-gate`; SDD's final whole-branch gate (owns `REVIEW_HEAD`, `scripts/review-package`, delta re-review); the S2 reviewer-context seam (`docs/REVIEW-GUIDANCE.md`).
+- Produces: the skill name `workstack-slice-gate` and its recorded exact-head approval. Task 18's `workstack-resume` references it by name.
+
+- [ ] **Step 1: Write the failing test** at `tests/workstack/test-slice-gate.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` helpers (verbatim), then continue with:
+
+```bash
+skill="$repo_root/skills/workstack-slice-gate/SKILL.md"
+metadata="$repo_root/skills/workstack-slice-gate/agents/openai.yaml"
+
+[ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
+
+assert_contains "$skill" "name: workstack-slice-gate" "frontmatter name"
+assert_contains "$skill" "I'm running the slice gate for <slice>." "announce line"
+assert_contains "$skill" "One slice, one gate, one PR." "one-gate invariant"
+assert_contains "$skill" "owned by superpowers:subagent-driven-development's final whole-branch gate and are not restated here" "gate mechanics deferred to SDD"
+assert_contains "$skill" "specialty \`final-gate\`" "routed final-gate reviewer"
+assert_contains "$skill" "fail closed on independence errors" "independence fails closed"
+assert_contains "$skill" "docs/REVIEW-GUIDANCE.md" "reviewer-only guidance offered"
+assert_contains "$skill" "spec and ticket coverage" "slice checklist: coverage"
+assert_contains "$skill" "integration coherence" "slice checklist: coherence"
+assert_contains "$skill" "accidental scope or unsupported claims" "slice checklist: scope"
+assert_contains "$skill" "Run the UX gate before this gate" "UX gate ordering"
+assert_contains "$skill" "Record the gate verdict and approved SHA in the progress ledger" "ledger recording"
+assert_contains "$skill" "Never open a PR or invoke branch completion with findings open" "no PR with open findings"
+assert_contains "$skill" "a new commit after approval restarts gate evidence" "head-bound evidence"
+assert_no_model_names "$skill"
+
+[ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
+grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
+echo "ok - committed OpenAI metadata present"
+
+echo "PASS"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — expect `not ok - skill file missing`, exit 1.
+
+- [ ] **Step 3: Write the skill** at `skills/workstack-slice-gate/SKILL.md` with exactly this content:
+
+```markdown
+---
+name: workstack-slice-gate
+description: Whole-slice quality gate - the reviewer route, review inputs, and checklist for gating a complete slice diff before its PR. Internal WorkStack helper; gate mechanics are owned by subagent-driven-development's final whole-branch gate.
+---
+
+# WorkStack Slice Gate
+
+**Announce:** "I'm running the slice gate for <slice>."
+
+**Entry:** a slice whose task reviews are clean and whose UX gate, when required, has passed on this head, with the slice base SHA recorded.
+**Exit:** explicit reviewer approval of the exact head SHA, recorded in the progress ledger. One slice, one gate, one PR.
+
+The gate mechanics — immutable `REVIEW_HEAD`, review packaging, one-fixer finding batches, delta packages, and same-thread re-review until explicit approval — are owned by superpowers:subagent-driven-development's final whole-branch gate and are not restated here. This skill supplies only what a slice adds to that gate.
+
+## Reviewer
+
+Resolve one `reviewer` with specialty `final-gate` via workstack-agent-routing, passing the slice's implementer route as the author identity; fail closed on independence errors.
+
+## Review inputs (by path)
+
+The review package, the primary specification, this slice's living-plan section, the verification log, and `docs/REVIEW-GUIDANCE.md` when the project provides it.
+
+## Slice checklist
+
+Beyond code quality, the verdict must cover: spec and ticket coverage for every acceptance signal the slice claims; integration coherence across the slice's tasks; repository rules and ownership boundaries; security, data, migration, and API-contract risk; test adequacy and verification evidence; documentation obligations; and accidental scope or unsupported claims.
+
+## Ordering and recording
+
+Run the UX gate before this gate so its fixes land in the gated diff. Record the gate verdict and approved SHA in the progress ledger before opening the PR. Never open a PR or invoke branch completion with findings open; a new commit after approval restarts gate evidence.
+```
+
+- [ ] **Step 4: Write the metadata** at `skills/workstack-slice-gate/agents/openai.yaml`:
+
+```yaml
+interface:
+  display_name: "WorkStack Slice Gate"
+  short_description: "Whole-slice quality gate before the PR"
+  default_prompt: "Use $workstack-slice-gate to gate this slice's complete diff."
+```
+
+- [ ] **Step 5: Run the test to verify it passes** — final `PASS`, exit 0.
+- [ ] **Step 6: Run `bash tests/workstack/test-final-review-gate.sh`** — `PASS` (the SDD gate this skill defers to is unchanged).
+- [ ] **Step 7: Commit** — `git add skills/workstack-slice-gate tests/workstack/test-slice-gate.sh && git commit -m "add workstack-slice-gate skill"`
+
+### Task 16: Add the workstack-start public entry point
+
+**Files:**
+
+- Create: `skills/workstack-start/SKILL.md`
+- Create: `skills/workstack-start/agents/openai.yaml`
+- Create: `tests/workstack/test-start.sh`
+
+**Interfaces:**
+
+- Consumes: `brainstorming`'s continuation contract ("If the invoking prompt named exactly one continuation skill before this skill was invoked, invoke it after the user approves the written spec"); `workstack-spec-review` (Task 14); spec locations from §8.1.
+- Produces: the public entry point `workstack-start`, already referenced by name in `workstack-quick-task`'s promotion clause and `workstack/AGENTS-SNIPPET.md` — the name is load-bearing.
+
+- [ ] **Step 1: Write the failing test** at `tests/workstack/test-start.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` helpers plus `assert_before` from `tests/workstack/test-continuation-seams.sh` (verbatim), then continue with:
+
+```bash
+skill="$repo_root/skills/workstack-start/SKILL.md"
+metadata="$repo_root/skills/workstack-start/agents/openai.yaml"
+
+[ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
+
+assert_contains "$skill" "name: workstack-start" "frontmatter name"
+assert_contains "$skill" "I'm using workstack-start to take this from idea to approved spec." "announce line"
+assert_contains "$skill" "This skill makes nothing; it sequences approvals." "pure-sequencer stance"
+assert_contains "$skill" "superpowers:brainstorming" "delegates discovery to brainstorming"
+assert_contains "$skill" "naming \`workstack-start\` as the continuation" "continuation declared"
+assert_contains "$skill" "instead of flowing to writing-plans" "default continuation pre-empted"
+assert_contains "$skill" "docs/superpowers/specs/YYYY-MM-DD-<feature-slug>-spec.md" "canonical spec location"
+assert_contains "$skill" "Do not write code, scaffold, plan, or invoke any implementation skill until your human partner approves the direction." "direction hard gate"
+assert_contains "$skill" "Expand the same file — never a second design artifact" "single spec artifact"
+assert_contains "$skill" "Decision-complete is the bar" "spec bar"
+assert_contains "$skill" "empty open-questions section" "open questions closed at approval"
+assert_contains "$skill" "No implementation task lists, branch structure, or speculative file paths" "spec content exclusions"
+assert_contains "$skill" "workstack-spec-review" "spec review helper"
+assert_contains "$skill" "No Linear decomposition and no implementation planning before that approval." "approval hard gate"
+assert_contains "$skill" "Invoke \`workstack-resume\` with the approved spec path" "handoff to resume"
+assert_contains "$skill" "Resume Work owns every later state" "no overlapping path"
+assert_before "$skill" "## 1. Direction" "## 2. Specification" "direction precedes spec"
+assert_before "$skill" "## 3. Review and approval" "## 4. Hand off" "review precedes handoff"
+assert_no_model_names "$skill"
+
+[ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
+grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
+echo "ok - committed OpenAI metadata present"
+
+echo "PASS"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — expect `not ok - skill file missing`, exit 1.
+
+- [ ] **Step 3: Write the skill** at `skills/workstack-start/SKILL.md` with exactly this content:
+
+```markdown
+---
+name: workstack-start
+description: Use when work is new, ambiguous, or lacks an approved specification. Public WorkStack entry point - brainstorm to an approved direction, expand it into a reviewed decision-complete specification, then hand off to workstack-resume, which owns every state after spec approval.
+---
+
+# WorkStack Start
+
+**Announce:** "I'm using workstack-start to take this from idea to approved spec."
+
+**Entry:** a new or ambiguous request with no approved specification.
+**Exit:** a user-approved specification handed to `workstack-resume`. This skill makes nothing; it sequences approvals.
+
+## 1. Direction
+
+Invoke superpowers:brainstorming, naming `workstack-start` as the continuation so approval of the draft direction returns here instead of flowing to writing-plans. The draft lives at `docs/superpowers/specs/YYYY-MM-DD-<feature-slug>-spec.md` in `Draft direction` state.
+
+**HARD GATE:** Do not write code, scaffold, plan, or invoke any implementation skill until your human partner approves the direction.
+
+## 2. Specification
+
+Expand the same file — never a second design artifact — into a decision-complete specification: goal, context, approved decisions, numbered testable requirements, actors and failure behavior, data and API contract decisions, frontend state and visual acceptance criteria where applicable, acceptance signals, non-goals, and an empty open-questions section. Decision-complete is the bar: a planner must be able to plan from it without guessing product intent, ownership boundaries, or acceptance signals. No implementation task lists, branch structure, or speculative file paths.
+
+## 3. Review and approval
+
+Run workstack-spec-review to `Approved`, then obtain your human partner's approval of the reviewed specification.
+
+**HARD GATE:** No Linear decomposition and no implementation planning before that approval.
+
+## 4. Hand off
+
+Invoke `workstack-resume` with the approved spec path. Resume Work owns every later state — tickets, the living plan, slices, gates, PRs, recovery, closeout. Do not create an overlapping path here.
+```
+
+- [ ] **Step 4: Write the metadata** at `skills/workstack-start/agents/openai.yaml`:
+
+```yaml
+interface:
+  display_name: "WorkStack Start"
+  short_description: "Take new or ambiguous work to an approved spec"
+  default_prompt: "Use $workstack-start to shape and spec this work."
+```
+
+- [ ] **Step 5: Run the test to verify it passes** — final `PASS`, exit 0.
+- [ ] **Step 6: Run `bash tests/workstack/test-continuation-seams.sh` and `bash tests/workstack/test-quick-task.sh`** — `PASS` from each (the continuation seam and the promotion clause this entry point relies on are unchanged).
+- [ ] **Step 7: Commit** — `git add skills/workstack-start tests/workstack/test-start.sh && git commit -m "add workstack-start public entry point"`
+
+### Task 17: Add the living-plan format and plan-authoring reference docs
+
+**Files:**
+
+- Create: `skills/workstack-resume/living-plan-format.md`
+- Create: `skills/workstack-resume/plan-authoring.md`
+- Create: `tests/workstack/test-plan-docs.sh`
+
+**Interfaces:**
+
+- Consumes: spec §10 (plan structure), §17.2/§18 (artifacts and retention), §12.2/§13 (gate ordering); the legacy refined fork's six authoring rules (per the Instructional-Conflict Register porting decision); SDD's `.superpowers/sdd` workspace.
+- Produces: the two canonical reference docs Task 18's SKILL.md and the plan-writing continuation cite by filename. The gate taxonomy and ledger format are defined here and nowhere else.
+
+- [ ] **Step 1: Write the failing test** at `tests/workstack/test-plan-docs.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` helpers (verbatim), then continue with:
+
+```bash
+fmt="$repo_root/skills/workstack-resume/living-plan-format.md"
+auth="$repo_root/skills/workstack-resume/plan-authoring.md"
+
+[ -f "$fmt" ] || { echo "not ok - living-plan-format.md missing" >&2; exit 1; }
+[ -f "$auth" ] || { echo "not ok - plan-authoring.md missing" >&2; exit 1; }
+
+assert_contains "$fmt" "docs/superpowers/plans/YYYY-MM-DD-<feature-slug>.md" "plan location"
+assert_contains "$fmt" "removed from the current tree by a coordination commit" "closeout removal"
+assert_contains "$fmt" "Delivery-slice index" "slice index required"
+assert_contains "$fmt" "\`deferred\`, \`ready\`, \`active\`, \`gated\`, \`PR open\`, \`merged\`, \`cancelled\`, \`blocked\`" "slice state vocabulary"
+assert_contains "$fmt" "split the slice before PR creation" "no partial-slice merges"
+assert_contains "$fmt" "It never guesses file paths, signatures, migrations, or task steps" "checkpoint anti-speculation rule"
+assert_contains "$fmt" "Task review" "gate taxonomy: task review"
+assert_contains "$fmt" "Whole-slice gate" "gate taxonomy: slice gate"
+assert_contains "$fmt" "PR provider gate" "gate taxonomy: provider gate"
+assert_contains "$fmt" ".superpowers/sdd/ledger.md" "ledger location"
+assert_contains "$fmt" "Write the transition before acting on it" "ledger-before-action rule"
+assert_contains "$fmt" "resume from the ledger alone" "ledger sufficiency"
+assert_contains "$fmt" "never a content document" "thin worktree context pointer"
+assert_contains "$fmt" "The recovery authority order lives in \`workstack-resume\`'s SKILL.md" "authority order single-sourced"
+
+assert_contains "$auth" "pasted alone into a fresh implementer prompt" "extraction framing"
+assert_contains "$auth" "Implementers never read the plan file" "self-contained tasks"
+assert_contains "$auth" "References (paste into implementer prompt)" "reference block name"
+assert_contains "$auth" "Never reference a whole document" "surgical references"
+assert_contains "$auth" "three or more tasks share the exact same bare reference" "spec-dump smell"
+assert_contains "$auth" "Existing Code Anchors" "anchors block name"
+assert_contains "$auth" "current behavior, pattern to copy, code to preserve, known hazards" "anchor categories"
+assert_contains "$auth" "\"Update all callers\" is not a task" "sweep rule"
+assert_contains "$auth" "completion predicate" "sweep predicate"
+assert_contains "$auth" "most ambitious task" "extraction test target"
+assert_contains "$auth" "trivial tasks smuggle in implicit context" "extraction test breadth"
+
+for f in "$fmt" "$auth"; do
+  if grep -Eq 'phase plan|shepherd|implementation phase' "$f"; then
+    echo "not ok - phase vocabulary in $f" >&2
+    exit 1
+  fi
+done
+echo "ok - no phase vocabulary"
+echo "PASS"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — expect `not ok - living-plan-format.md missing`, exit 1.
+
+- [ ] **Step 3: Write** `skills/workstack-resume/living-plan-format.md` with exactly this content:
+
+```markdown
+# WorkStack Living Plan Format
+
+Canonical definition of the living implementation plan, its slice lifecycle, the gate taxonomy, and the runtime artifacts. Skills and planners reference this document instead of restating it. The recovery authority order lives in `workstack-resume`'s SKILL.md.
+
+## Plan document
+
+Location: `docs/superpowers/plans/YYYY-MM-DD-<feature-slug>.md`, committed while active so worktrees and restarted orchestrators can read it, and removed from the current tree by a coordination commit at closeout — Git history remains the record.
+
+Required sections, in order:
+
+1. Status line and plan owner
+2. Primary specification path
+3. Linear ticket set (real IDs only, never invented)
+4. Goal and completion signals
+5. Global Constraints — copied from the spec and repository rules; every task brief carries this section
+6. Decision log
+7. Delivery-slice index
+8. Fully detailed sections for the current ready frontier only
+9. Lightweight planning checkpoints for dependent future work
+10. Closeout conditions, including contract and artifact pruning
+
+## Slice index
+
+One row per slice: Slice ID and name · Ticket IDs · Dependencies · State · Branch/worktree (once execution starts) · Contract impact (None, producer, consumer, or reserved surface) · PR (once created).
+
+Slice states: `deferred`, `ready`, `active`, `gated`, `PR open`, `merged`, `cancelled`, `blocked`. Every ticket belongs to exactly one slice in at most one active plan. All tickets in a slice start and complete together; split the slice before PR creation rather than merging it incomplete.
+
+## Planning checkpoints
+
+A checkpoint records only: intended outcome, included ticket IDs, known dependencies, facts frozen by the spec, the trigger that makes detailed planning appropriate, and the surfaces to re-explore. It never guesses file paths, signatures, migrations, or task steps before the prerequisite code exists. At the checkpoint: confirm prerequisites merged, sync, re-explore the named surfaces, detail the new frontier in the same plan, self-review, and continue without a user pause while inside approved spec and ticket scope.
+
+## Gate taxonomy
+
+Defined once here; skills refer to gates by name.
+
+- **Task review** — one combined spec-compliance and code-quality review per task, owned by superpowers:subagent-driven-development.
+- **UX gate** — `workstack-ux-gate`: scripted-capture verification of changed user-visible surfaces; runs before the whole-slice gate so its fixes land in the gated diff.
+- **Whole-slice gate** — `workstack-slice-gate`: one fresh reviewer over the complete slice diff; a PR opens only after it approves the exact head.
+- **PR provider gate** — `workstack-pr-monitor`: exact-head provider and CI conditions from `.workstack/pr-policy.md`, through merge.
+
+## Runtime artifacts
+
+- **Progress ledger** — `.superpowers/sdd/ledger.md`, worktree-local and ignored. One row per state transition: date · slice · task or gate · state · head SHA · next expected event, plus decisions and deviations. Write the transition before acting on it; a fresh orchestrator must be able to resume from the ledger alone. Deleted with the worktree.
+- **Worktree context** — uncommitted `docs/WORKTREE_CONTEXT.md`: a thin pointer naming the slice and the living-plan path, never a content document. Deleted with the worktree.
+- **Briefs, reports, review packages, verification logs** — under ignored `.superpowers/`, one owner each, deleted with the worktree.
+```
+
+- [ ] **Step 4: Write** `skills/workstack-resume/plan-authoring.md` with exactly this content:
+
+```markdown
+# WorkStack Plan-Authoring Rules
+
+Supplementary rules for writing living-plan slice tasks, supplied to the plan-writing continuation by WorkStack entry points. They extend superpowers:writing-plans without editing it. The test behind every rule: each task will be pasted alone into a fresh implementer prompt.
+
+## 1. Tasks are self-contained
+
+Implementers never read the plan file. Anything living only in a top-level section is invisible to them. Every external artifact a task depends on is listed inside that task in a `**References (paste into implementer prompt):**` block; repeat references across tasks that share them.
+
+> **References (paste into implementer prompt):**
+> - `docs/superpowers/specs/2026-07-18-feature-spec.md § "Approval Flow"` — authoritative for this task.
+> - `apps/web/components/estimate-builder.tsx:1-120` — current implementation being replaced; preserve action semantics.
+
+## 2. References are surgical
+
+Never reference a whole document. Every spec fact a task depends on is either inline-quoted or cited with a specific section and line range. If three or more tasks share the exact same bare reference, the plan is spec-dumping — go back and read the spec until you can name which sections each task actually needs.
+
+## 3. Modification tasks carry code anchors
+
+Any task that modifies existing code includes an `**Existing Code Anchors:**` block with `file:line-range` entries for: current behavior, pattern to copy, code to preserve, known hazards. Greenfield tasks need none.
+
+> **Existing Code Anchors:**
+> - `apps/api/src/estimates/controller.ts:59-88` — current validation being replaced.
+> - `apps/api/src/customers/controller.ts:41-63` — pattern to copy.
+
+## 4. Sweeps are enumerated by the planner
+
+"Update all callers" is not a task. The planner runs the discovery command against the real codebase and pastes the resulting `file:line` list into the task, plus a completion predicate — a command that returns no matches only when the sweep is done — and an explicit out-of-scope list. Flag verbs: audit, normalize, sweep, migrate, convert, replace, propagate, standardize, unify.
+
+> Discovery: `rg -n '\.safeParse\(' apps/api/src` — enumerated targets pasted into the task.
+> Verify: the same command finds no matches outside the out-of-scope list.
+
+## 5. The extraction test
+
+Before saving, copy the single most ambitious task alone into an imaginary blank prompt. If an implementer would need to infer architecture, files to inspect, existing patterns, or sequence, the plan is not done. Apply the same test to one routine and one trivial task — trivial tasks smuggle in implicit context too.
+
+## 6. Expanded self-review
+
+Beyond upstream writing-plans' checks, verify before saving: every modification task has anchors; every sweep is enumerated with a predicate; no three tasks share a bare reference; each task survives the extraction test; UX and slice gates are placed where the living-plan format requires; every verify command is real and was run against the current tree.
+```
+
+- [ ] **Step 5: Run the test to verify it passes** — final `PASS`, exit 0.
+- [ ] **Step 6: Commit** — `git add skills/workstack-resume tests/workstack/test-plan-docs.sh && git commit -m "add living-plan format and plan-authoring reference docs"`
+
+### Task 18: Add the workstack-resume public entry point
+
+**Files:**
+
+- Create: `skills/workstack-resume/SKILL.md`
+- Create: `skills/workstack-resume/agents/openai.yaml`
+- Create: `tests/workstack/test-resume.sh`
+
+**Interfaces:**
+
+- Consumes: Task 17's reference docs (same directory); `workstack-agent-routing`; `workstack-ux-gate`, `workstack-slice-gate`, `workstack-pr-monitor` by name; `writing-plans`' continuation contract; `using-git-worktrees` declared-preference behavior; `finishing-a-development-branch`'s completion contract; SDD.
+- Produces: the public entry point `workstack-resume` — the name already referenced by `workstack-quick-task`, `workstack-start`, and `workstack/AGENTS-SNIPPET.md`. S5's Task 21 extends this file's dispatch table; keep the table format stable.
+
+- [ ] **Step 1: Write the failing test** at `tests/workstack/test-resume.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` helpers plus `assert_before` (verbatim), then continue with:
+
+```bash
+skill="$repo_root/skills/workstack-resume/SKILL.md"
+metadata="$repo_root/skills/workstack-resume/agents/openai.yaml"
+
+[ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
+
+assert_contains "$skill" "name: workstack-resume" "frontmatter name"
+assert_contains "$skill" "I'm using workstack-resume; discovering state before acting." "announce line"
+assert_contains "$skill" "The durable record is the state; you are replaceable." "replaceable-orchestrator stance"
+assert_contains "$skill" "Never trust conversation memory." "discovery over memory"
+assert_contains "$skill" "merged commits and current PR head state" "authority order: commits first"
+assert_contains "$skill" "conversation memory last" "authority order: memory last"
+assert_contains "$skill" "reconcile the less authoritative source before dispatching work" "reconciliation rule"
+assert_contains "$skill" "Write every state transition to the ledger before acting on it." "ledger-before-action"
+assert_contains "$skill" "living-plan-format.md" "format doc referenced"
+assert_contains "$skill" "plan-authoring.md" "authoring doc referenced"
+assert_contains "$skill" "Approved spec, no living plan" "row: spec only"
+assert_contains "$skill" "naming \`workstack-resume\` as the continuation" "plan-writing continuation declared"
+assert_contains "$skill" "Plan with a due planning checkpoint" "row: checkpoint"
+assert_contains "$skill" "Ready slice, not started" "row: ready"
+assert_contains "$skill" "stating the worktree decision up front" "worktree consent pre-empted"
+assert_contains "$skill" "mark slice tickets in progress in one Linear operation" "slice-start Linear op"
+assert_contains "$skill" "Active slice, task incomplete" "row: mid-task"
+assert_contains "$skill" "never redispatched" "idempotent task resume"
+assert_contains "$skill" "Task reviews clean, gate not passed" "row: gated pending"
+assert_contains "$skill" "Recover \`REVIEW_HEAD\` from the ledger, never memory." "gate head recovery"
+assert_contains "$skill" "Gated, no PR" "row: gated"
+assert_contains "$skill" "declaring the pull-request completion route" "completion contract declared"
+assert_contains "$skill" "monitored, never recreated" "idempotent PR handling"
+assert_contains "$skill" "reconciled, never reopened" "idempotent merge handling"
+assert_contains "$skill" "advance newly unblocked slices to ready" "post-merge advancement"
+assert_contains "$skill" "prune or transfer any owned contract exactly once" "closeout prune"
+assert_contains "$skill" "Nothing matches" "row: inconsistent state"
+assert_contains "$skill" "Continue through merge and reconciliation" "default continuation depth"
+assert_contains "$skill" "never per task or review round" "coarse Linear"
+assert_contains "$skill" "One slice, one gate, one PR. Inner-loop execution stays sequential." "core invariants"
+assert_before "$skill" "## 1. Discover state" "## 2. Dispatch table" "discovery precedes dispatch"
+assert_no_model_names "$skill"
+
+[ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
+grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
+echo "ok - committed OpenAI metadata present"
+
+echo "PASS"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — expect `not ok - skill file missing`, exit 1.
+
+- [ ] **Step 3: Write the skill** at `skills/workstack-resume/SKILL.md` with exactly this content:
+
+```markdown
+---
+name: workstack-resume
+description: Use when an approved specification or living plan already exists - including after compaction, a stopped session, or a merged slice. Public WorkStack entry point that discovers durable state and performs the next valid transition until the selected frontier is merged and reconciled.
+---
+
+# WorkStack Resume
+
+**Announce:** "I'm using workstack-resume; discovering state before acting."
+
+**Entry:** an approved specification or an active living plan.
+**Exit:** the selected frontier merged and reconciled, or a genuine block: a missing product decision, an unresolved destructive conflict, missing authority, or an external gate that cannot progress.
+
+The durable record is the state; you are replaceable. A fresh orchestrator must reach the same next action from the files alone. Plan structure, slice states, gates, and the ledger format are defined in this skill's `living-plan-format.md`.
+
+## 1. Discover state
+
+Never trust conversation memory. Read the durable sources in authority order: merged commits and current PR head state; the living plan's slice index and any active contract; the worktree-local progress ledger; task reports and review packages; Git history on the slice branch; Linear status for coarse outcome state; conversation memory last. When sources disagree, reconcile the less authoritative source before dispatching work. Write every state transition to the ledger before acting on it.
+
+## 2. Dispatch table
+
+Act on the first row matching the discovered state, then rediscover and repeat.
+
+| Observed state | Transition |
+|---|---|
+| Approved spec, no living plan | Create or reconcile Linear tickets in one batched operation. Invoke superpowers:writing-plans naming `workstack-resume` as the continuation, with this skill's `plan-authoring.md` and `living-plan-format.md` named in the prompt. Obtain your human partner's approval of the initial plan. |
+| Plan with a due planning checkpoint | Confirm prerequisite slices merged; sync to the current base head; re-explore the checkpoint's named surfaces and contracts; detail the new ready frontier in the same plan; self-review it. Pause for approval only when product behavior, acceptance criteria, ticket scope, or an approved cross-slice interface changed. |
+| Ready slice, not started | Preflight: resolve every required role via workstack-agent-routing (fail closed on reviewer independence); sync the slice base; create an isolated worktree with superpowers:using-git-worktrees, stating the worktree decision up front; apply the project's worktree rules; write the uncommitted worktree context pointer; initialize the ledger; mark slice tickets in progress in one Linear operation. Then execute the slice's tasks with superpowers:subagent-driven-development. |
+| Active slice, task incomplete | A task marked complete in the ledger with matching commits is never redispatched. Resume the interrupted task from its ledger row, brief, and commits. |
+| Task reviews clean, gate not passed | Run workstack-ux-gate when the slice requires it, then workstack-slice-gate. Recover `REVIEW_HEAD` from the ledger, never memory. |
+| Gated, no PR | Complete the branch with superpowers:finishing-a-development-branch, declaring the pull-request completion route and the project's target base branch, then hand the PR to workstack-pr-monitor. |
+| PR open | An existing PR is monitored, never recreated: continue workstack-pr-monitor against its current head. |
+| Merged, not reconciled | A merged PR is reconciled, never reopened: close slice tickets in one Linear operation; update or close any plan-owned contract whose prune trigger is satisfied; remove the worktree, branch, and ignored scratch; advance newly unblocked slices to ready. |
+| All slices merged, plan still open | Closeout: verify no work remains; prune or transfer any owned contract exactly once; remove the living plan from the current tree by coordination commit; report completion evidence. |
+| Nothing matches | The state is inconsistent. Reconcile per the authority order; if a genuine product decision, destructive conflict, or missing authority remains, stop and present it to your human partner. |
+
+## Rules
+
+- Continue through merge and reconciliation for the selected frontier unless your human partner requested a narrower stop.
+- Coarse Linear only: tickets change at creation or material scope change, slice start, and merge or cancellation — never per task or review round.
+- One slice, one gate, one PR. Inner-loop execution stays sequential.
+```
+
+- [ ] **Step 4: Write the metadata** at `skills/workstack-resume/agents/openai.yaml`:
+
+```yaml
+interface:
+  display_name: "WorkStack Resume"
+  short_description: "Discover durable state and perform the next valid transition"
+  default_prompt: "Use $workstack-resume to continue this work from its durable state."
+```
+
+- [ ] **Step 5: Run the test to verify it passes** — final `PASS`, exit 0.
+- [ ] **Step 6: Run the neighboring tests** — `bash tests/workstack/test-plan-docs.sh && bash tests/workstack/test-quick-task.sh && bash tests/workstack/test-start.sh && bash tests/workstack/test-completion-contract.sh`; `PASS` from each.
+- [ ] **Step 7: Commit** — `git add skills/workstack-resume tests/workstack/test-resume.sh && git commit -m "add workstack-resume public entry point"`
+
+### Task 19: Package the S4 skills and re-verify the workflow summary
+
+**Files:**
+
+- Modify: `tests/codex/test-package-codex-plugin.sh` (the S3 `for ws_skill in …` loop)
+- Inspect: `workstack/AGENTS-SNIPPET.md` (change only if it misdescribes shipped behavior)
+
+**Interfaces:**
+
+- Consumes: the S1 packaging rule (committed `agents/openai.yaml` first) and the S3 packaging loop.
+- Produces: Codex packages containing all seven `workstack-*` skills plus the two `workstack-resume` reference docs.
+
+- [ ] **Step 1: Extend the packaging loop.** Change the S3 loop list to `workstack-quick-task workstack-pr-monitor workstack-ux-gate workstack-start workstack-resume workstack-spec-review workstack-slice-gate`, and after the loop add:
+
+```bash
+assert_contains "$archive_paths" "skills/workstack-resume/living-plan-format.md" "archive includes living-plan format doc"
+assert_contains "$archive_paths" "skills/workstack-resume/plan-authoring.md" "archive includes plan-authoring doc"
+```
+
+- [ ] **Step 2: Run `bash tests/codex/test-package-codex-plugin.sh`** — exit 0. Fix only within the S1 metadata-precedence behavior if an assertion fails.
+- [ ] **Step 3: Re-read `workstack/AGENTS-SNIPPET.md`.** The three entry points and the two paragraphs must still describe shipped behavior; S4 adds no fourth entry point and must not require a third paragraph. Expected: no change needed. If a change is needed, keep `bash tests/workstack/test-workflow-summary.sh` green.
+- [ ] **Step 4: Run the full suite** — every `tests/workstack/test-*.sh`, `bash tests/codex/test-package-codex-plugin.sh`, `bash tests/codex/test-marketplace-manifest.sh`, `bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh`, `bash tests/claude-code/test-sdd-workspace.sh`, `python3 scripts/check-workstack-divergences.py`; all `PASS`/exit 0.
+- [ ] **Step 5: Commit** — `git add tests/codex/test-package-codex-plugin.sh && git commit -m "package S4 workstack skills"`
+
+### S4 Slice Verification and Gate
+
+- [ ] Record the slice base SHA before Task 14 begins.
+- [ ] Run the five new tests (`test-spec-review.sh`, `test-slice-gate.sh`, `test-start.sh`, `test-plan-docs.sh`, `test-resume.sh`) and the full pre-existing suite; all `PASS`/exit 0.
+- [ ] Run `python3 scripts/check-workstack-divergences.py`; expect no new core divergences.
+- [ ] Generate one review package from the slice base through current HEAD and dispatch an independent final-gate reviewer (spec, this slice section, verification log, diff package by path); fix the complete finding set and resume the same reviewer until it approves the current head.
+- [ ] Open exactly one PR for S4 and merge only its reviewed head — unless the user again authorizes direct commits, in which case record that decision in the Decision Log as with S2/S3.
+
+---
+
+## Ready Slice S5 — Parallel Delivery Contracts (was Checkpoint C5)
+
+**Planning note (2026-07-19):** Detailed by user direction; the "one sequential slice end-to-end" trigger is demoted to S6 pilot evidence. Planned against spec §14/§15 (digested with citations) and the transitional `workstack-batch-plan`/`workstack-shepherd-phase` lane rules. FSMCRM-specific lane mechanics (port math, Prisma migration slots, compose project names) stay in FSMCRM's `AGENTS.md` worktree rules — the fork doc references "the project's worktree rules" generically.
+
+**Execution precondition:** S4 merged. Before Task 20 dispatch, re-verify `skills/workstack-resume/SKILL.md` landed with the Task 18 dispatch-table format unchanged.
+
+**Goal:** Add the parallel-slice capability: one canonical active-contracts/parallel-eligibility reference doc and the `workstack-resume` dispatch rows that use it — keeping parallelism strictly between independent slices in separate worktrees, with the contract owned and pruned by exactly one orchestrator.
+
+**Acceptance signals:**
+
+- The contract lifecycle (when to create, required fields, sole-writer ownership, prune trigger, stale audit) is defined once, in `skills/workstack-resume/active-contracts.md`.
+- Parallel eligibility is a written checklist ("disjoint write sets, verified, not assumed"; frozen interfaces; explicit migration ownership and merge order; isolated runtime resources; independent gate/merge), with sequential as the default on any doubt and at most two concurrent code-bearing slices by default.
+- `dispatching-parallel-agents` is scoped in WorkStack text to read-only exploration fan-out and independent contract-covered slices only (per the Instructional-Conflict Register).
+- A contract is never deleted from branch/worktree age alone; a plan cannot close while it owns a binding contract.
+
+### Task 20: Add the active-contracts and parallel-eligibility reference doc
+
+**Files:**
+
+- Create: `skills/workstack-resume/active-contracts.md`
+- Create: `tests/workstack/test-active-contracts.sh`
+
+**Interfaces:**
+
+- Consumes: spec §14 (parallel delivery), §15 (contract lifecycle), §5.6/§5.12 invariants; the Instructional-Conflict Register's `dispatching-parallel-agents` scoping.
+- Produces: the canonical contract/parallel doc Task 21's dispatch rows cite by filename.
+
+- [ ] **Step 1: Write the failing test** at `tests/workstack/test-active-contracts.sh` (mark executable). Start from the committed `tests/workstack/test-pr-monitor.sh` helpers (verbatim), then continue with:
+
+```bash
+doc="$repo_root/skills/workstack-resume/active-contracts.md"
+[ -f "$doc" ] || { echo "not ok - active-contracts.md missing" >&2; exit 1; }
+
+assert_contains "$doc" "at most one active contract" "one contract per plan"
+assert_contains "$doc" "Independent work with no coordination risk creates no contract." "no gratuitous contracts"
+assert_contains "$doc" "docs/active-contracts/<plan-slug>.md" "contract location"
+assert_contains "$doc" "Exact prune trigger" "prune trigger field"
+assert_contains "$doc" "sole writer" "sole-writer ownership"
+assert_contains "$doc" "lanes never author or edit contracts" "read-only for lanes"
+assert_contains "$doc" "verify no prior owner is live, record the ownership transfer" "restart ownership transfer"
+assert_contains "$doc" "disjoint write sets, verified, not assumed" "eligibility: disjoint writes"
+assert_contains "$doc" "frozen or has one declared producer" "eligibility: frozen interfaces"
+assert_contains "$doc" "migration ownership and merge order are explicit" "eligibility: migrations"
+assert_contains "$doc" "not reused until a lane retires" "eligibility: resource reservation"
+assert_contains "$doc" "Any claim you cannot make confidently means sequential." "sequential default"
+assert_contains "$doc" "At most two concurrent code-bearing slices by default" "concurrency default"
+assert_contains "$doc" "never a completion requirement" "parallelism optional"
+assert_contains "$doc" "they never independently reinterpret the change" "consumer discipline"
+assert_contains "$doc" "never create competing migrations" "migration exclusivity"
+assert_contains "$doc" "every named consumer is merged, cancelled, or transferred" "prune condition"
+assert_contains "$doc" "cannot close while it owns a binding contract" "plan-close guard"
+assert_contains "$doc" "never from branch or worktree age alone" "no age-based deletion"
+assert_contains "$doc" "may outlive its producer branch" "contract survives producer"
+assert_contains "$doc" "read-only exploration fan-out and to independent contract-covered slices only" "dispatching-parallel-agents scoped"
+assert_contains "$doc" "never a license for parallel implementation inside one slice" "no intra-slice parallelism"
+assert_no_model_names "$doc"
+echo "PASS"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — expect `not ok - active-contracts.md missing`, exit 1.
+
+- [ ] **Step 3: Write** `skills/workstack-resume/active-contracts.md` with exactly this content:
+
+```markdown
+# WorkStack Active Contracts and Parallel Slices
+
+Canonical rules for running independent delivery slices in parallel and for the contract that coordinates them. Owned by `workstack-resume`; every other skill and agent treats contracts as read-only.
+
+## When a contract exists
+
+A living plan creates at most one active contract, and only when work reserves a shared or cross-cutting surface, changes an interface another active or planned slice consumes, owns a migration or data-model transition with external consumers, or must communicate a temporary compatibility rule across worktrees. Independent work with no coordination risk creates no contract.
+
+## Contract file
+
+Location: `docs/active-contracts/<plan-slug>.md`, committed to the base branch while binding. Required fields: Status and owning living plan · Owning orchestrator · Created and last-verified dates · Reserved surfaces · Frozen interface or single-producer decision · Producer and consumer ticket IDs · Active branches, worktrees, and PRs when known · Migration ownership and ordering when applicable · Coordination rules · Exact prune trigger · Final closeout owner.
+
+## Ownership
+
+The one active top-level resume orchestrator is the contract's sole writer. Slice orchestrators, implementers, reviewers, and monitors read it and report proposed changes to the owner; lanes never author or edit contracts. After a restart, verify no prior owner is live, record the ownership transfer, and become sole writer. Update the contract before authorizing work that would violate or change it.
+
+## Parallel eligibility
+
+Slices run in parallel only when the orchestrator can state, in writing, all of: neither depends on unmerged behavior from the other; primary file and ownership surfaces do not overlap — parallel means disjoint write sets, verified, not assumed; any shared interface is frozen or has one declared producer; migration ownership and merge order are explicit; isolated runtime resources (ports, databases) are reserved per the project's worktree rules and not reused until a lane retires; each slice can independently pass its tests, gate, and merge. Any claim you cannot make confidently means sequential. At most two concurrent code-bearing slices by default; project configuration may change this without editing skills. Parallelism is an optimization, never a completion requirement.
+
+## Conflict graph and merge order
+
+The living plan records, for the ready frontier: slice dependencies, overlapping surfaces, producer/consumer relationships, and the required merge order. When a producer changes a frozen interface, consumer work pauses until the contract and plan are updated; consumers rebase or re-plan after the producer merges — they never independently reinterpret the change. One slice owns a schema or migration sequence at a time; parallel lanes never create competing migrations or edit the same shared schema assuming Git resolves the semantic conflict.
+
+## Pruning and the stale audit
+
+Every plan that opens a contract carries an explicit closeout condition. The owner deletes the contract only when its prune trigger is satisfied and every named consumer is merged, cancelled, or transferred; a plan cannot close while it owns a binding contract. Scan active contracts before any shared-surface planning. An audit may update stale operational references, but deletes a contract only when trigger and consumer state prove it obsolete — never from branch or worktree age alone; a contract may outlive its producer branch while consumers remain active.
+
+## Scope of dispatching-parallel-agents
+
+superpowers:dispatching-parallel-agents applies to read-only exploration fan-out and to independent contract-covered slices only. It is never a license for parallel implementation inside one slice; inner-loop execution stays sequential, and two agents never edit the same slice worktree concurrently.
+```
+
+- [ ] **Step 4: Run the test to verify it passes** — final `PASS`, exit 0.
+- [ ] **Step 5: Commit** — `git add skills/workstack-resume/active-contracts.md tests/workstack/test-active-contracts.sh && git commit -m "add active-contracts and parallel-eligibility reference doc"`
+
+### Task 21: Add the parallel dispatch rows to workstack-resume
+
+**Files:**
+
+- Modify: `skills/workstack-resume/SKILL.md`
+- Modify: `tests/workstack/test-resume.sh`
+- Modify: `tests/codex/test-package-codex-plugin.sh`
+
+**Interfaces:**
+
+- Consumes: Task 20's `active-contracts.md`; the Task 18 dispatch-table format.
+- Produces: the parallel-capable `workstack-resume`. Change only what these steps name; the S4 rows and their tested sentences must remain byte-identical.
+
+- [ ] **Step 1: Extend the test.** Append to `tests/workstack/test-resume.sh` (before `echo "PASS"`):
+
+```bash
+assert_contains "$skill" "scan \`docs/active-contracts/\`" "discovery scans contracts"
+assert_contains "$skill" "Two or more ready slices, eligibility claims all pass" "row: parallel frontier"
+assert_contains "$skill" "active-contracts.md" "contract doc referenced"
+assert_contains "$skill" "its own sequential slice loop in its own worktree" "parallel isolation"
+assert_contains "$skill" "Overlap or doubt means sequential." "sequential default"
+```
+
+- [ ] **Step 2: Run it to verify it fails** — expect the first new assertion to fail.
+
+- [ ] **Step 3: Edit the skill.** In `skills/workstack-resume/SKILL.md`: (a) in `## 1. Discover state`, extend the sentence beginning "Read the durable sources" so the plan/contract source reads "the living plan's slice index and any active contract (scan `docs/active-contracts/` before any shared-surface planning)"; (b) insert this row immediately after the `Ready slice, not started` row:
+
+```markdown
+| Two or more ready slices, eligibility claims all pass | Verify or create the plan's single contract per this skill's `active-contracts.md`, then run each slice as its own sequential slice loop in its own worktree — at most two concurrent code-bearing slices by default. Overlap or doubt means sequential. |
+```
+
+Change nothing else in the file.
+
+- [ ] **Step 4: Add the packaging assertion.** In `tests/codex/test-package-codex-plugin.sh`, beside the Task 19 doc assertions add:
+
+```bash
+assert_contains "$archive_paths" "skills/workstack-resume/active-contracts.md" "archive includes active-contracts doc"
+```
+
+- [ ] **Step 5: Run** `bash tests/workstack/test-resume.sh && bash tests/workstack/test-active-contracts.sh && bash tests/codex/test-package-codex-plugin.sh` — all `PASS`/exit 0.
+- [ ] **Step 6: Commit** — `git add skills/workstack-resume/SKILL.md tests/workstack/test-resume.sh tests/codex/test-package-codex-plugin.sh && git commit -m "add parallel-slice dispatch to workstack-resume"`
+
+### S5 Slice Verification and Gate
+
+- [ ] Record the slice base SHA before Task 20 begins.
+- [ ] Run the full `tests/workstack/` suite, the packaging/manifest/sync tests, and `python3 scripts/check-workstack-divergences.py`; all `PASS`/exit 0.
+- [ ] Confirm `workstack/AGENTS-SNIPPET.md` still holds at two paragraphs (its parallel sentence already exists; no edit expected).
+- [ ] Independent final-gate review of the whole-slice diff, closed to approval of the current head; then one PR (or user-authorized direct commits, recorded in the Decision Log).
+
+---
+
+## Ready Slice S6 — Cutover, Pilots, and Closeout (was Checkpoint C6)
+
+**Planning note (2026-07-19):** Detailed by user direction. FSMCRM state re-explored 2026-07-19: `4787cf51` is FSMCRM's HEAD (no skill changes since); the transitional set is 11 `workstack-*` skills byte-mirrored in `.claude/skills/` and `.codex/skills/`; the fork's 15 skills are installed in `.agents/skills/` and `.claude/skills/`; confirmed parity gaps — `workstack-agent-routing` and all fork skills absent from `.codex/skills/`, and an empty stray `pr-monitor/` directory exists in **both** mirrors. Name collisions at refresh: exactly `workstack-quick-task`, `workstack-ux-gate`, `workstack-pr-monitor`.
+
+**Execution precondition:** S4 and S5 merged. Tasks 22–26 run in the FSMCRM checkout (`~/projects/fsmcrm`, base branch `develop`) under FSMCRM's own commit conventions; Task 27 spans both repos. Before Task 22 dispatch, re-verify FSMCRM's skill directories and `AGENTS.md` against the state above and preserve any unrelated user work.
+
+**Goal:** Cut FSMCRM over to the fork workflow, prove it with the spec §22 pilots while the transitional skills still exist as a fallback, and then close out: remove the transitional set, reconcile Linear, document upstream updates, and verify the spec §23 definition of done.
+
+**Acceptance signals:**
+
+- All three harness skill directories carry the fork set (minus `executing-plans`), the entry points trigger from clean Claude Code and Codex sessions, and the transitional skills survive—renamed where colliding—until pilots pass.
+- Provider mechanics live in `.workstack/pr-policy.md` and model names in `.workstack/agents.json`; no FSMCRM skill or `AGENTS.md` section carries a concrete model name for review routing.
+- FSMCRM `AGENTS.md` explains the workflow in the two `AGENTS-SNIPPET.md` paragraphs plus the three entry points, and retains Testing Judgment, the worktree rules, the precedence ladder, the reviewer-only `docs/REVIEW-GUIDANCE.md` label, and the "human partner = dispatching orchestrator" clarification.
+- The three pilots (§22.1 quick task; §22.3 sequential multi-ticket with a materialized checkpoint and a §22.7 kill-and-resume probe; §22.5 parallel slices under one §22.6-style contract, pruned per §22.10) pass with recorded evidence.
+- After removal, no `workstack-*` skill exists in FSMCRM outside the fork-installed set; the spec §23 twelve conditions are verified with evidence pointers.
+
+### Task 22: Refresh the FSMCRM install and resolve collisions (FSMCRM repo)
+
+- [ ] Rename the three colliding transitional skills in **both** mirrors (`.claude/skills/` and `.codex/skills/`) from `workstack-{quick-task,ux-gate,pr-monitor}` to `legacy-workstack-*`; update each frontmatter `name:` to match and prepend one line to the description: "Transitional fallback retained through the S6 pilots; prefer the workstack-* replacement." Update any references in FSMCRM `AGENTS.md` and the other transitional skills.
+- [ ] Delete the stray empty `pr-monitor/` directory from both mirrors.
+- [ ] Refresh the project-local install with an explicit skill list applying the register's exclusion — every fork skill except `executing-plans` — for both agents: `npx -y skills@latest add mlk1278/superpowers-workstack --skill <each-name> --agent claude-code --agent codex --yes`.
+- [ ] Verify: `skills-lock.json` lists the expected set; `.agents/skills/`, `.claude/skills/`, and `.codex/skills/` each contain the fork set including `workstack-agent-routing` and the four S4 skills; `executing-plans` is absent from all three; the eight non-colliding transitional skills and the three `legacy-workstack-*` fallbacks are untouched.
+- [ ] Commit in FSMCRM per its conventions.
+
+### Task 23: Add FSMCRM project configuration (FSMCRM repo)
+
+- [ ] Write `.workstack/agents.json` porting `docs/SUBAGENT-ROUTING.md`'s ladder into roles, reviewer specialties (including `ux` → a vision-capable route and `final-gate`), and ordered fallbacks. Concrete model names appear only here. Validate every role plus reviewer independence with `skills/workstack-agent-routing/scripts/resolve-agent` (each role; reviewer with `--author-model` set to the implementer route's model must resolve independent, or fail closed).
+- [ ] Write `.workstack/pr-policy.md` porting the transitional `workstack-pr-monitor`'s mechanics: provider names and request order (Codex Cloud auto-review; CodeRabbit for medium/high/sensitive), the helper-script commands (`scripts/agents/fetch-pr-feedback.py`, `scripts/agents/request-pr-review.py`, `scripts/ci/watch-pr-checks.sh`) with their exit-code map (0 green, 1 failed, 2 unavailable-fail-closed, 4 pending) and the PAT/`gh pr checks` caveat, the 180-second poll interval and 60-minute single-head fallback, the `!simple` lane definition with its full reserved-exclusion list, "repository auto-merge is not enabled", and `develop` as the target base branch.
+- [ ] Diff-review the fork `workstack-pr-monitor` + policy file pair against the transitional skill line by line; any transitional rule not yet covered becomes a policy line, never a fork-skill edit.
+- [ ] Commit in FSMCRM.
+
+### Task 24: Rewrite FSMCRM AGENTS.md (FSMCRM repo)
+
+- [ ] Replace the "Feature Workflow" section (the transitional skill-chain paragraph) with the current contents of the fork's `workstack/AGENTS-SNIPPET.md` — two paragraphs plus the three entry points, verbatim.
+- [ ] Retain unchanged: the behavioral sections (Think Before Coding … Goal-Driven Execution), Task Scope Discipline, Read First/Core Docs, Non-Negotiables, Worktrees (including port math and the `DB_PORT` gotcha), Exploration Standard, Testing Judgment, Progress/Ticket Tracking, Dev Commands, docs/tech-debt sections, and the `.environment/` restriction.
+- [ ] Keep the Review-ownership invariant sentence ("code is always reviewed by a model different from the one that wrote it") but move its concrete model mapping to `.workstack/agents.json`, leaving a pointer.
+- [ ] Add two clauses: `docs/REVIEW-GUIDANCE.md` is reviewer-only — no non-review role may load it; and in dispatched subagents, "your human partner" means the dispatching orchestrator.
+- [ ] Verify the workflow explanation fits two paragraphs plus the entry points; if it cannot, redesign the capability, not the summary. Commit in FSMCRM.
+
+### Task 25: Prove the entry points from clean sessions (FSMCRM repo)
+
+- [ ] From a clean Claude Code session and a clean Codex session, run three prompts: a small decision-complete fix ("…use workstack-quick-task"), an ambiguous feature idea ("…use workstack-start"), and a resume against the pilot plan state ("…use workstack-resume"). Verify each announces its skill, resolves routes via `resolve-agent`, and no transitional/`legacy-workstack-*` skill triggers instead.
+- [ ] Record one verdict file per session/prompt under FSMCRM's ignored `.superpowers/evals/`, including the routing-thrash observation (did `brainstorming`/`using-superpowers` greedy triggers divert the entry point?) feeding the Instructional-Conflict Register's revisit decision.
+
+### Task 26: Run the pilots (FSMCRM repo; transitional fallbacks still present)
+
+- [ ] **Pilot A — quick task (§22.1):** one real small change through `workstack-quick-task` to merged PR and cleanup. This also supplies the fresh-agent seam evidence deferred from S3 Task 13.
+- [ ] **Pilot B — sequential multi-ticket (§22.3 + §22.7):** one real small feature through `workstack-start` → spec approval → `workstack-resume` → tickets, living plan with at least one deferred checkpoint → first slice merged → checkpoint materialized → second slice merged. Mid-slice, deliberately kill the session and resume from durable state: no completed task redispatched, no PR recreated.
+- [ ] **Pilot C — parallel slices (§22.5/§22.6/§22.10):** two genuinely independent slices under the plan's single contract, run in separate worktrees with reserved resources, merged in declared order, contract pruned exactly once at closeout.
+- [ ] Record pass/fail evidence per pilot under `.superpowers/evals/`; failures produce fixes (fork or config per the register's levers) and pilot reruns until pass. Decide the greedy-trigger register revisits (divergence or leave-as-is) from the accumulated observations and record the decision in this plan's Decision Log.
+
+### Task 27: Remove the transitional set and close out (both repos)
+
+- [ ] FSMCRM: delete the eight remaining transitional `workstack-*` skills and the three `legacy-workstack-*` fallbacks from both mirrors (support skills like `linear-cli`, `playwright-cli`, `create-github-pr`, `update-user-docs` stay — they are project tooling, not workflow); verify no `workstack-*` skill exists outside the fork-installed set.
+- [ ] FSMCRM: reconcile any Linear projects still structured by phases at coarse granularity; close or relabel stale phase tickets in batched operations.
+- [ ] Fork: fix any specification gaps the pilots exposed (spec edits with user approval where behavior changed); update this plan's Decision Log.
+- [ ] Fork: write `workstack/UPSTREAM-UPDATES.md` — the upstream-update procedure: fetch upstream, merge the release tag, run `python3 scripts/check-workstack-divergences.py`, re-run the full test suite, re-apply/re-approve the divergence allowlist when a seam no longer applies. Add a `tests/workstack/test-upstream-updates-doc.sh` asserting the doc exists and names the divergence check and full-suite steps. Commit.
+- [ ] Both: close contracts, prune pilot plans and worktrees, and run one final conflict scan of FSMCRM's installed skill set against the Instructional-Conflict Register — every absolute in installed text has a recorded resolution.
+- [ ] Verify the spec §23 definition of done: all twelve conditions with an evidence pointer each, recorded in this plan. Only then does this plan proceed to its Final Closeout Conditions below.
+
+### S6 Slice Verification and Gate
+
+- [ ] Fork-side changes gated as usual: full suite green, independent final-gate review closed on the current head, one PR (or user-authorized direct commits, recorded).
+- [ ] FSMCRM-side changes reviewed under FSMCRM's own review-ownership rules; pilots themselves are the behavioral gate for this slice.
+- [ ] The §23 twelve-condition checklist is the slice's exit criterion; an unmet condition reopens the owning task rather than shipping around it.
 
 ## Final Closeout Conditions
 
