@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(git rev-parse --show-toplevel)
+skill="$repo_root/skills/workstack-pr-monitor/SKILL.md"
+metadata="$repo_root/skills/workstack-pr-monitor/agents/openai.yaml"
+
+assert_contains() {
+  local file=$1 text=$2 description=$3
+  if ! grep -Fq "$text" "$file"; then
+    echo "not ok - $description" >&2
+    echo "missing: $text" >&2
+    exit 1
+  fi
+  echo "ok - $description"
+}
+
+assert_no_model_names() {
+  local file=$1
+  if grep -Eq 'gpt-[0-9]|opus-|sonnet|haiku|-sol|Sol (high|medium|low)' "$file"; then
+    echo "not ok - concrete model identifiers in $file" >&2
+    exit 1
+  fi
+  echo "ok - no concrete model identifiers in $file"
+}
+
+[ -f "$skill" ] || { echo "not ok - skill file missing: $skill" >&2; exit 1; }
+
+assert_contains "$skill" "name: workstack-pr-monitor" "frontmatter name"
+assert_contains "$skill" "Own exactly one PR" "single-PR ownership"
+assert_contains "$skill" "sole source of WorkStack PR review, CI, fix-loop, and merge mechanics" "sole-source clause"
+assert_contains "$skill" ".workstack/pr-policy.md" "project policy file location"
+assert_contains "$skill" "exact-head green CI, zero unresolved review threads, and no requested-changes review" "default conditions without a policy file"
+assert_contains "$skill" "Never hard-code a provider this file does not name." "no hard-coded providers"
+assert_contains "$skill" "The local final gate must have approved this exact head before monitoring begins." "local gate precedes monitoring"
+assert_contains "$skill" "Bind all evidence to the current head" "exact-head evidence binding"
+assert_contains "$skill" "at most once per head request each policy-named provider" "single review request per head"
+assert_contains "$skill" "fail closed on unavailable" "CI unavailable fails closed"
+assert_contains "$skill" "one batch to a fresh implementer routed via workstack-agent-routing" "batched fixes through routing"
+assert_contains "$skill" "resume the local gate reviewer thread on the delta" "local gate delta re-review"
+assert_contains "$skill" "materially changes behavior, architecture, migration, or risk" "full gate rerun trigger"
+assert_contains "$skill" "Record the fallback reason." "fallback is recorded"
+assert_contains "$skill" "confirm the remote PR is \`MERGED\`" "merge confirmation"
+assert_contains "$skill" "The caller owns post-merge reconciliation." "reconciliation stays with caller"
+assert_contains "$skill" "Do not nest another watcher." "no nested watchers"
+assert_no_model_names "$skill"
+
+[ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }
+grep -Fq "display_name" "$metadata" || { echo "not ok - metadata lacks display_name" >&2; exit 1; }
+echo "ok - committed OpenAI metadata present"
+
+echo "PASS"

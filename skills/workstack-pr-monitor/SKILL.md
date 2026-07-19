@@ -1,0 +1,33 @@
+---
+name: workstack-pr-monitor
+description: Own one WorkStack pull request from its current head through CI, configured review providers, fix loops, and merge or a durable blocker. Internal helper started by WorkStack entry points after a slice PR opens.
+---
+
+# WorkStack PR Monitor
+
+Own exactly one PR and its worktree until it is merged or genuinely blocked. This skill is the sole source of WorkStack PR review, CI, fix-loop, and merge mechanics; callers start it once and wait for its return.
+
+## Project policy
+
+Read `.workstack/pr-policy.md` at the repository root when it exists. It names the review providers to await, how to request them, complexity lanes, and timeout policy. Without it, the required conditions are exact-head green CI, zero unresolved review threads, and no requested-changes review. Never hard-code a provider this file does not name.
+
+## Preflight
+
+Capture the PR number, branch, current full head SHA, merge state, and the approved local-gate SHA. The local final gate must have approved this exact head before monitoring begins. Bind all evidence to the current head; any push starts a new evidence cycle.
+
+## Monitor loop
+
+1. Refresh the PR head, merge state, and unresolved threads. A conflicting PR schedules no CI; resolve the conflict before diagnosing missing checks.
+2. Refresh exact-head CI (`gh pr checks` or the policy file's command). Distinguish failed from pending from unavailable, and fail closed on unavailable — it is not a green result.
+3. Await, and at most once per head request each policy-named provider. Only a current-head review object or an authenticated completion naming the current commit counts as completion; acknowledgements and reactions never do.
+4. Verify findings against the code. Send valid findings as one batch to a fresh implementer routed via workstack-agent-routing, inspect and test the fixes, push once, then resume the local gate reviewer thread on the delta. Concretely rebut invalid findings on the PR.
+5. Rerun the full local gate instead of a delta review when a fix materially changes behavior, architecture, migration, or risk.
+6. If no action is ready, wait one bounded interval (default 180 seconds; policy may override) and refresh. Do not nest another watcher.
+
+## Fallback
+
+After the policy timeout on one head (default 60 minutes), or on explicit provider failure or rate limiting, exact-head green CI plus the recorded local gate approval is sufficient. Record the fallback reason. Do not switch to a provider the policy does not name.
+
+## Merge and return
+
+Immediately before merging, re-verify on the expected head: policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit — to the caller. The caller owns post-merge reconciliation.
