@@ -291,6 +291,12 @@ metadata_count="$(find "$STAGE/skills" -path '*/agents/openai.yaml' -type f | wc
   } >"$ARCHIVE_LIST"
 )
 
+# Normalize stage permissions so archive entry modes don't depend on the
+# packager's umask.
+find "$STAGE" -type d -exec chmod 755 {} +
+find "$STAGE" -type f -perm -u+x -exec chmod 755 {} +
+find "$STAGE" -type f ! -perm -u+x -exec chmod 644 {} +
+
 case "$FORMAT" in
   zip)
     # ZIP cannot represent dates earlier than 1980.
@@ -303,11 +309,17 @@ case "$FORMAT" in
     ;;
   tar.gz)
     # Match the prior official archive's deterministic tar entry metadata.
+    # GNU tar and bsdtar spell the owner-normalization flags differently.
     TZ=UTC find "$STAGE" -exec touch -t 197001010000 {} +
+    if tar --version 2>/dev/null | grep -q 'GNU tar'; then
+      TAR_OWNER_FLAGS=(--owner=0 --group=0 --numeric-owner)
+    else
+      TAR_OWNER_FLAGS=(--uid 0 --gid 0 --uname '' --gname '')
+    fi
     (
       cd "$STAGE"
       rm -f "$OUTPUT"
-      COPYFILE_DISABLE=1 tar -cf - --no-recursion --format ustar --uid 0 --gid 0 --uname '' --gname '' -T "$ARCHIVE_LIST" |
+      COPYFILE_DISABLE=1 tar -cf - --no-recursion --format ustar "${TAR_OWNER_FLAGS[@]}" -T "$ARCHIVE_LIST" |
         gzip -9n >"$OUTPUT"
     )
     ;;
