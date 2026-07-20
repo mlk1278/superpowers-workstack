@@ -26,38 +26,24 @@ assert_not_contains() {
   echo "ok - $description"
 }
 
-assert_before() {
-  local first=$1 second=$2 description=$3
-  local first_line second_line
-  first_line=$(grep -Fn "$first" "$skill" | head -1 | cut -d: -f1)
-  second_line=$(grep -Fn "$second" "$skill" | head -1 | cut -d: -f1)
-  if [[ -z "$first_line" || -z "$second_line" || "$first_line" -ge "$second_line" ]]; then
-    echo "not ok - $description" >&2
-    exit 1
-  fi
-  echo "ok - $description"
-}
+assert_contains 'Caller-provided routes take precedence: plan route, then project route, then the bundled model-selection defaults below.' \
+  "caller routing precedence is explicit"
+assert_contains 'If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review.' \
+  "optional pre-final gate runs at the retained seam"
+assert_contains 'The final whole-branch review gets a package too: run' \
+  "broad final review still receives a review package"
+assert_contains 'If the final whole-branch review returns findings, dispatch ONE fix' \
+  "final findings are fixed together"
+assert_contains 'subagent with the complete findings list — not one fixer per finding.' \
+  "one fixer receives the complete finding set"
+assert_contains 'contains the covering tests, the command run, and the output' \
+  "fix verification carries evidence"
+assert_contains 'Resume the same final reviewer thread with a `review-package` for the fix delta, and repeat until approved.' \
+  "same reviewer receives delta packages until approval"
 
-assert_contains 'REVIEW_HEAD=$(git rev-parse HEAD)' "final review resolves an exact head"
-assert_contains 'Set `MERGE_BASE` to `git merge-base <target-branch> HEAD`, where `<target-branch>` is the branch this work will merge into.' "final review defines the merge base"
-assert_contains 'scripts/review-package "$MERGE_BASE" "$REVIEW_HEAD"' "whole-branch package uses the exact head"
-assert_contains 'Only an explicit `Ready to merge? Yes` approves that SHA.' "approval verdict is explicit"
-assert_contains 'Record `REVIEW_HEAD` and each reviewer verdict in the progress ledger as they occur; when approved, record the approved SHA.' "final gate records durable approval state"
-assert_contains 'After any compaction or resume, recover these values from the ledger before continuing the gate.' "final gate recovers durable approval state"
-assert_contains 'Send the complete final finding set to one fixer.' "final findings are fixed together"
-assert_contains 'covering command, exit status, and relevant output' "fix verification carries evidence"
-assert_contains 'scripts/review-package "$REVIEW_HEAD" "$NEW_HEAD"' "re-review receives a fresh delta package"
-assert_contains 'Resume the same final reviewer thread' "re-review stays in one thread"
-assert_contains 'require `git rev-parse HEAD` to equal the approved SHA' "branch completion checks the approved head"
-assert_contains 'run covering verification for that delta, package it, and resume the same reviewer thread' "late deltas are verified before re-review"
-
-assert_not_contains \
-  '"Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Use superpowers:finishing-a-development-branch";' \
-  "process graph has no direct final-review completion edge"
-assert_contains '[One fixer receives the complete final finding set]' "example exercises a final finding path"
-assert_contains 'Invoke `finishing-a-development-branch` with open final findings' "red flags prohibit an open gate"
-assert_before 'Only an explicit `Ready to merge? Yes` approves that SHA.' \
-  'Immediately before invoking `finishing-a-development-branch`' \
-  "approval precedes branch completion"
+assert_not_contains '### Final whole-branch gate' "exact-head gate section removed"
+assert_not_contains 'REVIEW_HEAD=$(git rev-parse HEAD)' "exact-head state removed"
+assert_not_contains 'approved SHA' "approved-SHA bookkeeping removed"
+assert_not_contains 'After any compaction or resume' "resume state machinery removed"
 
 echo "PASS"

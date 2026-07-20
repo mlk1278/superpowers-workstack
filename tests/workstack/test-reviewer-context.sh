@@ -6,7 +6,6 @@ sdd="$repo_root/skills/subagent-driven-development/SKILL.md"
 task_prompt="$repo_root/skills/subagent-driven-development/task-reviewer-prompt.md"
 requesting="$repo_root/skills/requesting-code-review/SKILL.md"
 final_prompt="$repo_root/skills/requesting-code-review/code-reviewer.md"
-spec="$repo_root/docs/superpowers/specs/2026-07-18-workstack-development-workflow-spec.md"
 implementer_prompt="$repo_root/skills/subagent-driven-development/implementer-prompt.md"
 
 assert_contains() {
@@ -50,14 +49,6 @@ assert_contains "$sdd" 'Use `None` when there is no useful nuance.' \
   "SDD omits invented review nuance"
 assert_contains "$requesting" 'Do not read `docs/REVIEW-GUIDANCE.md` yourself' \
   "ad hoc review caller leaves guidance to reviewer"
-assert_contains "$spec" 'Only the reviewer reads this file.' \
-  "workflow specification makes guidance reviewer-only"
-assert_contains "$spec" 'The orchestrator may also provide concise task- or slice-specific review nuance.' \
-  "workflow specification permits scoped review nuance"
-assert_contains "$spec" '- `docs/REVIEW-GUIDANCE.md` when the project provides it;' \
-  "UX reviewers receive project review guidance"
-assert_contains "$spec" 'It must label `docs/REVIEW-GUIDANCE.md` as reviewer-only and prohibit every non-review role from loading it.' \
-  "project agent rules must preserve reviewer-only context"
 assert_not_contains "$implementer_prompt" 'docs/REVIEW-GUIDANCE.md' \
   "implementer prompt does not receive reviewer guidance"
 

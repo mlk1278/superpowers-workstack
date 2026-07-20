@@ -26,23 +26,10 @@ fi
 
 awk -v n="$n" '
   /^```/ { infence = !infence }
-  !infence && /^##[ \t]+Global Constraints[ \t]*$/ {
-    inglobal = 1
-  }
-  !infence && inglobal && /^#[#]?[ \t]+/ &&
-      $0 !~ /^##[ \t]+Global Constraints[ \t]*$/ {
-    inglobal = 0
-  }
   !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {
-    inglobal = 0
     intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
-    if (intask) foundtask = 1
   }
-  inglobal { constraints = constraints $0 ORS }
-  intask { task = task $0 ORS }
-  END {
-    if (foundtask) printf "%s%s", constraints, task
-  }
+  intask { print }
 ' "$plan" > "$out"
 
 if [ ! -s "$out" ]; then

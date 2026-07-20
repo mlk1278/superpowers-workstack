@@ -6,6 +6,21 @@ checker="$repo_root/scripts/check-workstack-divergences.py"
 fixture=$(mktemp -d)
 trap 'rm -rf "$fixture"' EXIT
 
+actual_allowlist=$(jq -r '.divergences[].path' "$repo_root/workstack/upstream-divergences.json" | LC_ALL=C sort)
+expected_allowlist=$(printf '%s\n' \
+  skills/finishing-a-development-branch/SKILL.md \
+  skills/requesting-code-review/SKILL.md \
+  skills/requesting-code-review/code-reviewer.md \
+  skills/subagent-driven-development/SKILL.md \
+  skills/subagent-driven-development/task-reviewer-prompt.md \
+  | LC_ALL=C sort)
+
+if [[ "$actual_allowlist" != "$expected_allowlist" ]]; then
+  echo "divergence allowlist does not match the retained surgical seams" >&2
+  diff -u <(printf '%s\n' "$expected_allowlist") <(printf '%s\n' "$actual_allowlist") >&2 || true
+  exit 1
+fi
+
 git -C "$fixture" init -q
 git -C "$fixture" config user.email "test@example.com"
 git -C "$fixture" config user.name "Test User"
