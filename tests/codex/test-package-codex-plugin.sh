@@ -7,8 +7,12 @@ SCRIPT_UNDER_TEST="$REPO_ROOT/scripts/package-codex-plugin.sh"
 
 FAILURES=0
 TEST_ROOT="$(mktemp -d)"
+linked_worktree=""
 
 cleanup() {
+  if [[ -n "$linked_worktree" && -e "$linked_worktree/.git" ]]; then
+    git -C "$REPO_ROOT" worktree remove --force "$linked_worktree"
+  fi
   rm -rf "$TEST_ROOT"
 }
 trap cleanup EXIT
@@ -145,6 +149,40 @@ write_metadata_fixture "$metadata_source"
 
 source_hooks="$(python3 -c 'import json; print(json.load(open("'"$REPO_ROOT"'/.codex-plugin/plugin.json")).get("hooks"))')"
 assert_equals "$source_hooks" "{}" "source Codex manifest suppresses local hook auto-discovery"
+
+enclosing_repo="$TEST_ROOT/enclosing-repo"
+nested_source="$enclosing_repo/nested-source"
+git -C "$TEST_ROOT" init -q "$enclosing_repo"
+git -C "$enclosing_repo" config user.email "test@example.com"
+git -C "$enclosing_repo" config user.name "Test User"
+printf 'outer checkout\n' >"$enclosing_repo/README.md"
+git -C "$enclosing_repo" add README.md
+git -C "$enclosing_repo" commit -qm "outer checkout"
+mkdir -p "$nested_source/scripts"
+cp "$SCRIPT_UNDER_TEST" "$nested_source/scripts/package-codex-plugin.sh"
+
+set +e
+nested_output="$("$nested_source/scripts/package-codex-plugin.sh" --allow-dirty --metadata-source "$metadata_source" --output "$TEST_ROOT/nested.zip" 2>&1)"
+nested_status=$?
+set -e
+if [[ "$nested_status" -ne 0 ]]; then
+  pass "package script rejects a source tree nested in another checkout"
+else
+  fail "package script rejects a source tree nested in another checkout"
+fi
+assert_contains "$nested_output" "ERROR: repo root is not a git checkout: $nested_source" "nested source rejection identifies the invalid repository root"
+
+linked_worktree="$TEST_ROOT/linked-worktree"
+git -C "$REPO_ROOT" worktree add --detach -q "$linked_worktree" HEAD
+cp "$SCRIPT_UNDER_TEST" "$linked_worktree/scripts/package-codex-plugin.sh"
+if linked_output="$("$linked_worktree/scripts/package-codex-plugin.sh" --allow-dirty --metadata-source "$metadata_source" --output "$TEST_ROOT/linked.zip" 2>&1)"; then
+  pass "package script accepts a linked worktree repository root"
+else
+  fail "package script accepts a linked worktree repository root"
+  printf '%s\n' "$linked_output" | sed 's/^/      /'
+fi
+git -C "$REPO_ROOT" worktree remove --force "$linked_worktree"
+linked_worktree=""
 
 if output="$("$SCRIPT_UNDER_TEST" --allow-dirty --metadata-source "$metadata_source" --output "$archive" 2>&1)"; then
   pass "package script exits successfully"
