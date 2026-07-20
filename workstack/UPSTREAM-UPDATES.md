@@ -27,9 +27,6 @@ Update the fork from an upstream Superpowers release tag, then verify every main
    ```bash
    for test in tests/workstack/test-*.sh; do bash "$test"; done
    bash tests/codex/test-package-codex-plugin.sh
-   bash tests/codex/test-marketplace-manifest.sh
-   bash tests/codex-plugin-sync/test-sync-to-codex-plugin.sh
-   bash tests/claude-code/test-sdd-workspace.sh
    python3 scripts/check-workstack-divergences.py
    ```
 
