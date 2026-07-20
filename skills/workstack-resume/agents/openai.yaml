@@ -1,4 +1,0 @@
-interface:
-  display_name: "WorkStack Resume"
-  short_description: "Discover durable state and perform the next valid transition"
-  default_prompt: "Use $workstack-resume to continue this work from its durable state."

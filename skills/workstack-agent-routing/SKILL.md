@@ -1,11 +1,11 @@
 ---
 name: workstack-agent-routing
-description: Resolve logical WorkStack agent roles to normalized dispatch routes. Use internally from WorkStack entry-point skills before delegating exploration, planning, implementation, operation, monitoring, or review work.
+description: Use when a WorkStack entry point must resolve a logical implementation, review, or monitoring role before dispatch.
 ---
 
 # WorkStack Agent Routing
 
-Treat this as an internal helper owned by the future public WorkStack entry-point skills. Callers request logical roles; they do not select concrete agents themselves.
+Treat this as an internal helper owned by the public WorkStack entry points. Callers request logical roles; they do not select concrete agents themselves.
 
 ## Resolve a route
 
@@ -13,7 +13,7 @@ Run `scripts/resolve-agent --project-root <root> --role <role>` before dispatch.
 
 Record the normalized JSON result in the work log before dispatch. Dispatch the returned primary route and retain `fallbacks` in their returned order. Do not reconstruct or guess a route when resolution fails. In particular, fail closed on reviewer-independence errors.
 
-Resolution precedence is explicit run override, reviewer specialty, workflow, harness, project role, then bundled role.
+Plan-supplied routes are explicit run overrides. For public workflow decisions, precedence is plan, project, bundled. Within project configuration, reviewer specialty, workflow, harness, and project role retain their existing resolver precedence. A plan may route implementer, task-reviewer, and final-reviewer work, but never the session orchestrator.
 
 ## Project configuration
 

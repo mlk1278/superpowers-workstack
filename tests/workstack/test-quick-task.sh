@@ -41,24 +41,19 @@ assert_before() {
 assert_contains "$skill" "name: workstack-quick-task" "frontmatter name"
 assert_contains "$skill" "I'm using workstack-quick-task to ship this." "announce line"
 assert_contains "$skill" "the ask itself is the spec" "entry condition"
-assert_contains "$skill" "one merged PR with scratch artifacts and the worktree removed" "exit condition"
-assert_contains "$skill" "Fail closed on reviewer-independence errors." "reviewer independence fails closed"
-assert_contains "$skill" "hand to \`workstack-start\` when no approved spec exists, or \`workstack-resume\` when one does" "promotion clause"
+assert_contains "$skill" "use upstream \`brainstorming\` and \`writing-plans\`" "ambiguous work uses upstream planning"
 assert_contains "$skill" "never creates one to mirror a tiny local change" "no ticket mirroring"
 assert_contains "$skill" ".superpowers/quick/" "ignored mini-plan location"
-assert_contains "$skill" "## Global Constraints" "mini-plan carries global constraints"
-assert_contains "$skill" "superpowers:subagent-driven-development" "reuses the SDD loop"
-assert_contains "$skill" "the task reviewer may issue the task verdict and the final-gate verdict in the same pass" "one-pass gate allowance"
-assert_contains "$skill" "run workstack-ux-gate before the final gate verdict" "conditional UX gate ordering"
-assert_contains "$skill" "stating the worktree decision up front" "worktree consent prompt pre-empted"
-assert_contains "$skill" "apply the project's own worktree rules" "project worktree rules layered on"
-assert_contains "$skill" "the project's testing policy when it differs from default TDD" "testing policy travels in constraints"
-assert_contains "$skill" "superpowers:finishing-a-development-branch" "branch completion handoff"
-assert_contains "$skill" "declaring the pull-request completion route" "completion contract declared, no menu"
-assert_contains "$skill" "workstack-pr-monitor" "PR monitor handoff"
-assert_contains "$skill" "Done means merged, not PR-open." "merged is done"
-assert_before "$skill" "## 2. Scope check" "## 3. Mini-plan" "scope check precedes the mini-plan"
-assert_before "$skill" "## 5. UX evidence" "## 6. PR and merge" "UX evidence precedes the PR"
+assert_contains "$skill" "one-task implementation plan" "mini-plan shape"
+assert_contains "$skill" "Invoke \`workstack-delivery\` with the mini-plan path" "shared delivery path"
+assert_contains "$skill" "Delivery owns the worktree, routing, SDD, optional UX gate, PR, merge, and cleanup." "delivery owns downstream workflow"
+assert_before "$skill" "## 1. Scope check" "## 2. Mini-plan" "scope check precedes the mini-plan"
+assert_before "$skill" "## 2. Mini-plan" "## 3. Deliver" "mini-plan precedes delivery"
+if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|## Global Constraints|superpowers:subagent-driven-development|superpowers:finishing-a-development-branch|workstack-pr-monitor|workstack-ux-gate' "$skill"; then
+  echo "not ok - quick task duplicates or references superseded delivery machinery" >&2
+  exit 1
+fi
+echo "ok - quick task delegates delivery machinery"
 assert_no_model_names "$skill"
 
 [ -f "$metadata" ] || { echo "not ok - committed OpenAI metadata missing" >&2; exit 1; }

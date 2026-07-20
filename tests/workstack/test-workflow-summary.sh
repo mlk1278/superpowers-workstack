@@ -16,13 +16,19 @@ assert_contains() {
 summary="$repo_root/workstack/AGENTS-SNIPPET.md"
 [ -f "$summary" ] || { echo "not ok - workflow summary draft missing" >&2; exit 1; }
 assert_contains "$summary" "workstack-quick-task" "summary names quick task"
-assert_contains "$summary" "workstack-start" "summary names start"
-assert_contains "$summary" "workstack-resume" "summary names resume"
-assert_contains "$summary" "enter at the first state you don't have" "summary states the entry rule"
+assert_contains "$summary" "workstack-delivery" "summary names delivery"
+assert_contains "$summary" "upstream \`brainstorming\` and \`writing-plans\`" "summary points ambiguous work upstream"
 assert_contains "$summary" "redesign the capability, not this summary" "summary is the simplicity forcing function"
-if grep -Eq 'phase plan|shepherd|implementation phase' "$summary"; then
-  echo "not ok - phase vocabulary in workflow summary" >&2
+if grep -Eq 'workstack-(start|resume|spec-review|slice-gate)|phase plan|shepherd|implementation phase|living plan|active contract' "$summary"; then
+  echo "not ok - superseded workflow vocabulary in workflow summary" >&2
   exit 1
 fi
-echo "ok - no phase vocabulary"
+echo "ok - no superseded workflow vocabulary"
+
+entry_points=$(grep -Ec '^- `workstack-[^`]+`:' "$summary")
+if [[ "$entry_points" -ne 2 ]]; then
+  echo "not ok - expected exactly two public entry points, found $entry_points" >&2
+  exit 1
+fi
+echo "ok - exactly two public entry points"
 echo "PASS"

@@ -1,13 +1,12 @@
-# WorkStack Workflow Summary (draft — updated each slice)
+# WorkStack Workflow Summary
 
-Canonical draft of the two-paragraph workflow explanation destined for a consuming project's `AGENTS.md`. If a new capability cannot be described without a third paragraph or a fourth entry point, redesign the capability, not this summary.
+Canonical two-paragraph workflow explanation for a consuming project's `AGENTS.md`. If a new capability cannot fit here or needs a third entry point, redesign the capability, not this summary.
 
-WorkStack tracks durable product outcomes as Linear tickets but keeps implementation detail local. New or ambiguous work is shaped into an approved direction, expanded into a decision-complete specification, represented as tickets, and organized in one living implementation plan that fully details only the delivery slices that are ready to build.
+New or ambiguous work uses upstream `brainstorming` and `writing-plans`. WorkStack starts from either a small decision-complete request or an approved implementation plan; Linear is optional and reconciled only when the plan is linked to it.
 
-Implementation happens one delivery slice at a time: a fresh implementer per task, one independent combined review per task, one whole-slice gate, and exactly one PR per slice, monitored through merge and reconciled in Linear. Independent slices may run in parallel worktrees under a lightweight active contract; everything inside a slice stays sequential.
+Delivery selects one coherent slice, runs upstream subagent-driven development in an isolated worktree, optionally gates material user-visible changes, uses SDD's broad final review as the slice gate, and owns one PR through merge and cleanup.
 
-Three entry points — enter at the first state you don't have:
+Two public entry points:
 
 - `workstack-quick-task`: a small decision-complete change, straight to one reviewed, merged PR.
-- `workstack-start`: new or ambiguous work, through brainstorming to an approved spec and plan.
-- `workstack-resume`: anything already specced or planned, through the next valid step to merge.
+- `workstack-delivery`: an approved implementation plan, through one coherent slice to a reviewed, merged PR and cleanup.

@@ -1,4 +1,0 @@
-interface:
-  display_name: "WorkStack Slice Gate"
-  short_description: "Whole-slice quality gate before the PR"
-  default_prompt: "Use $workstack-slice-gate to gate this slice's complete diff."
