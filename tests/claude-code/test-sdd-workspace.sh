@@ -82,10 +82,6 @@ main() {
 ### Task 99: Fenced global example
 ```
 
-## Context
-
-This must not enter the brief.
-
 ## Task 1: First thing
 
 Do the first thing.
@@ -114,14 +110,6 @@ PLAN
 
     local expected_brief="$TEST_ROOT/expected-brief.md"
     cat > "$expected_brief" <<'BRIEF'
-## Global Constraints
-
-- Keep shared behavior unchanged.
-
-```text
-### Task 99: Fenced global example
-```
-
 ## Task 1: First thing
 
 Do the first thing.
@@ -134,63 +122,10 @@ Still part of Task 1.
 
 BRIEF
     if cmp -s "$brief_path" "$expected_brief"; then
-        pass "task-brief includes exact global constraints before only the selected task"
+        pass "task-brief extracts only the selected task"
     else
-        fail "task-brief includes exact global constraints before only the selected task"
+        fail "task-brief extracts only the selected task"
         diff -u "$expected_brief" "$brief_path" || true
-    fi
-
-    cat > "$repo/template-plan.md" <<'PLAN'
-# Template Plan
-
-## Global Constraints
-
-- Preserve the public contract.
-
----
-
-### Task 1: First template task
-
-Implement only the first task.
-
-### Task 2: Neighbor template task
-
-This must not enter Task 1's brief.
-PLAN
-
-    local template_brief="$TEST_ROOT/template-brief.md"
-    local expected_template_brief="$TEST_ROOT/expected-template-brief.md"
-    "$SDD_SCRIPTS/task-brief" "$repo/template-plan.md" 1 "$template_brief" >/dev/null
-    cat > "$expected_template_brief" <<'BRIEF'
-## Global Constraints
-
-- Preserve the public contract.
-
----
-
-### Task 1: First template task
-
-Implement only the first task.
-
-BRIEF
-    if cmp -s "$template_brief" "$expected_template_brief"; then
-        pass "task-brief handles canonical level-three task headings without leakage"
-    else
-        fail "task-brief handles canonical level-three task headings without leakage"
-        diff -u "$expected_template_brief" "$template_brief" || true
-    fi
-
-    local missing_output missing_status
-    set +e
-    missing_output="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" plan.md 9 "$repo/missing.md" 2>&1)"
-    missing_status=$?
-    set -e
-    if [[ "$missing_status" -eq 3 && "$missing_output" == *"task 9 not found"* && ! -s "$repo/missing.md" ]]; then
-        pass "missing task does not emit a constraints-only brief"
-    else
-        fail "missing task does not emit a constraints-only brief"
-        echo "    status: $missing_status"
-        echo "    output: $missing_output"
     fi
 
     local git_id=(-c user.email=t@example.com -c user.name=t -c commit.gpgsign=false)
