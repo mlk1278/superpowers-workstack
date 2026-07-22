@@ -12,6 +12,8 @@ description: Scripted-capture UX verification of changed user-visible surfaces a
 
 Never review by navigating the browser interactively — manual navigation burns tokens and leaves no rerunnable evidence. Capture is scripted; judgment happens over the resulting images.
 
+Ownership follows workstack-delivery's role-ownership table: this gate runs in a dedicated gate-operator subagent dispatched by the orchestrator, and that operator owns scripted capture; a routed vision-capable reviewer owns judgment. Neither the orchestrator nor the implementer captures UX evidence, and task briefs must not reassign this.
+
 ## 0. Runtime preflight
 
 The environment must actually serve the changed routes with queryable data before capture starts. No preflight evidence means the gate cannot run, and nothing downstream may claim UX was verified.
@@ -30,7 +32,7 @@ Resolve one `reviewer` with specialty `ux` via workstack-agent-routing; the rout
 
 ## 4. Fix loop
 
-Route the finding set to the owning implementer thread, rerun the capture script on the new head, and send the fresh set to the same reviewer thread. Every round and the final `Pass` bind to the head SHA that was reviewed; a new push invalidates prior evidence. Run this gate before the final gate verdict so its fixes land in the gated head.
+Route the finding set to the owning implementer thread, rerun the capture script on the new head, and send the fresh set to the same reviewer thread. Every round and the final `Pass` bind to the head SHA that was reviewed; a new push invalidates prior evidence. Exception: commits that touch only Markdown files under `docs/**` or at the repository root, or `.superpowers/**` scratch, carry the evidence forward — record it explicitly ("Pass at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). A file the application builds, renders, or serves, or that supplies copy or content shown by the surfaces under review, never qualifies regardless of path. Any other change — code, tests, config, migrations, CI — invalidates as before. Run this gate before the final gate verdict so its fixes land in the gated head.
 
 ## Rules
 

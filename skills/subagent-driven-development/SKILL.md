@@ -82,7 +82,7 @@ digraph process {
 }
 ```
 
-**Optional pre-final gate:** If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review. Otherwise, follow the normal path unchanged.
+**Optional pre-final gate:** If the caller supplies a pre-final gate, run it after all task reviews and before the broad final review. Otherwise, follow the normal path unchanged. When the caller defines a role-ownership table (e.g. workstack-delivery's), it governs who runs each gate and who captures its evidence — task briefs must not reassign those roles.
 
 ## Pre-Flight Plan Review
 
@@ -136,6 +136,14 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 ## Handling Implementer Status
 
 Implementer subagents report one of four statuses. Handle each appropriately:
+
+**A progress message is not completion.** Only the subagent's final answer —
+the one carrying the Status token — is its report. If your harness's wait
+returns an intermediate message, or the wait is interrupted by an unrelated
+event (such as a new user message), the agent is still running: resume
+waiting on the same agent. Never treat an interrupted or intermediate
+message as failure, and never act on a status the agent has not yet
+reported.
 
 **DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
 
@@ -267,9 +275,19 @@ a ledger file, not only in todos.
   `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks listed there
   as complete are DONE — do not re-dispatch them; resume at the first task
   not marked complete.
-- When a task's review comes back clean, append one line to the ledger in
-  the same message as your other bookkeeping:
-  `Task N: complete (commits <base7>..<head7>, review clean)`.
+- Keep the ledger in this shape, updating it in the same message as your
+  other bookkeeping:
+  - **Header:** branch, plan path, and the current exact head SHA
+    (update the SHA whenever you append).
+  - **One line per task:**
+    complete — `Task N: complete (commits <base7>..<head7>, review clean, report <path>)`;
+    not yet complete — `Task N: in-progress (agent <id>)` or
+    `Task N: blocked (<why>)`, with no commit/review fields until they exist.
+  - **Active agents:** one line per live dispatch (agent id or handle,
+    scope); remove the line when that agent's final answer arrives.
+  - **Minor findings:** the running roll-up the final review triages.
+  - **Exactly one `Next:` line** naming the single next expected event
+    (e.g. `Next: task 4 review verdict`).
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.
@@ -384,6 +402,9 @@ Done!
 - Skip task review, or accept a report missing either verdict (spec compliance AND task quality are both required)
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
+- Let an implementer, fixer, or reviewer dispatch its own review or
+  re-review — all review dispatch belongs to the orchestrator, and a
+  self-arranged review does not count as the task review
 - Make a subagent read the whole plan file (hand it its task brief —
   `scripts/task-brief` — instead)
 - Skip scene-setting context (subagent needs to understand where task fits)

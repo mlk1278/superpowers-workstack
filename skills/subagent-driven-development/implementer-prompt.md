@@ -41,6 +41,10 @@ Subagent (general-purpose):
 
     Work from: [directory]
 
+    Do not dispatch subagents of your own — in particular, never arrange
+    your own code review. The controller owns review dispatch; a review you
+    commission yourself does not count and wastes a review cycle.
+
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
 

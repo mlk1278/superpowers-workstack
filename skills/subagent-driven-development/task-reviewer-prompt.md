@@ -65,7 +65,9 @@ Subagent (general-purpose):
     checking the call sites is the right method.
 
     Your review is read-only on this checkout. Do not mutate the working
-    tree, the index, HEAD, or branch state in any way.
+    tree, the index, HEAD, or branch state in any way. Do not dispatch
+    subagents — you are the review; the controller owns any follow-up
+    review or fix dispatch.
 
     ## Do Not Trust the Report
 

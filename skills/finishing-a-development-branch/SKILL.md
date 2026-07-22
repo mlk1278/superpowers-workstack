@@ -26,6 +26,20 @@ Guide completion of development work by presenting clear options and handling ch
 npm test / cargo test / pytest / go test ./...
 ```
 
+**Exact-head evidence reuse:** If the caller supplies evidence of a
+full-suite run at the exact current head SHA — the command that was run,
+its passing output (with the final pass/exit state visible), and the head
+SHA it ran against — read that output yourself and treat this step as
+satisfied; do not re-run the suite just to reproduce it. This is a
+deliberate, narrowly scoped exception to
+superpowers:verification-before-completion's run-it-yourself rule: it
+applies only to this step, only to a full-suite run at the exact current
+head, and only when you read the recorded output itself. A review
+approval, an agent's "tests pass" claim, or a report missing the command,
+the output, or the SHA never qualifies — nor does a different head, a
+failing run, or a partial/filtered run. Without qualifying evidence, run
+the suite.
+
 **If tests fail:**
 ```
 Tests failing (<N> failures). Must fix before completing:

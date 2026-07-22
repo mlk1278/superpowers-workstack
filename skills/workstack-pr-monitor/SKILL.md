@@ -13,7 +13,7 @@ Read `.workstack/pr-policy.md` at the repository root when it exists. It names t
 
 ## Preflight
 
-Capture the PR number, branch, current full head SHA, merge state, and the approved local-gate SHA. The local final gate must have approved this exact head before monitoring begins. Bind all evidence to the current head; any push starts a new evidence cycle.
+Capture the PR number, branch, current full head SHA, merge state, and the approved local-gate SHA. The local final gate must have approved this exact head before monitoring begins. Bind all evidence to the current head; any push starts a new evidence cycle. Exception: a push whose commits touch only Markdown files under `docs/**` or at the repository root, or `.superpowers/**` scratch, carries local-gate and completed-review evidence forward — record it explicitly ("gate at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). A file the application builds, renders, or serves, or that CI executes, never qualifies regardless of path. CI is never carried forward: exact-head green CI is still required on the new head. For provider completion, a review object naming the recorded carried-forward predecessor head counts as current-head completion — do not request a new provider review for a docs-only push.
 
 ## Monitor loop
 
@@ -30,4 +30,4 @@ After the policy timeout on one head (default 60 minutes), or on explicit provid
 
 ## Merge and return
 
-Immediately before merging, re-verify on the expected head: policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit — to the caller. The caller owns post-merge reconciliation.
+Immediately before merging, re-verify on the expected head (or a head that differs from it only by recorded docs-only carry-forward commits): policy-named providers or the recorded fallback, exact-head green CI, mergeability, and zero unresolved threads. Merge when all pass, confirm the remote PR is `MERGED`, and return the exact merge state — PR number, merged SHA, and merge commit — to the caller. The caller owns post-merge reconciliation.
