@@ -48,8 +48,14 @@ Subagent (general-purpose):
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
 
-    While iterating, run the focused test for what you're changing; run the
-    full suite once before committing, not after every edit.
+    While iterating, run the focused test for what you're changing. Before
+    committing, run the affected package suite(s) once — the packages your
+    diff touches plus direct consumers of any shared contract you changed —
+    never the whole workspace; the workspace-wide suite belongs to the
+    branch's final gate. Keep suite output out of your context: use the
+    project's quiet-run wrapper when it provides one, and read only the
+    exit status, pass count, and any failure tail — a passing run is a
+    pass count, not a transcript.
 
     ## Code Organization
 

@@ -38,6 +38,12 @@ assert_contains 'subagent with the complete findings list — not one fixer per 
   "one fixer receives the complete finding set"
 assert_contains 'contains the covering tests, the command run, and the output' \
   "fix verification carries evidence"
+assert_contains 'recorded, commit-bound evidence to read rather than' \
+  "evidence reuse is commit-bound and actor-scoped"
+assert_contains 'implementers and fixers always produce their own fresh evidence' \
+  "implementers never reuse evidence for their own claims"
+assert_contains 'The workspace-wide suite runs once, at the final gate' \
+  "workspace suite is final-gate only"
 assert_contains 'Resume the same final reviewer thread with a `review-package` for the fix delta, and repeat until approved.' \
   "same reviewer receives delta packages until approval"
 

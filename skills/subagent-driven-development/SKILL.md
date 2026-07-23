@@ -237,6 +237,38 @@ final whole-branch review. When you fill a reviewer template:
   session's final-review fix wave cost more than all its tasks combined.
   Resume the same final reviewer thread with a `review-package` for the fix delta, and repeat until approved.
 
+## Verification Scope
+
+Verification is proportional to the change. Before any suite-level run,
+ask: what did the diff touch, and what is the smallest command that
+proves it? Reviewers and orchestrators additionally ask whether the run
+already exists as recorded, commit-bound evidence to read rather than
+repeat; implementers and fixers always produce their own fresh evidence
+for the change they ship.
+
+- Iterating: focused tests for the code being changed.
+- Task gate: the affected package suite(s) once — the packages the diff
+  touches plus direct consumers of a changed shared contract. High-risk
+  changes (auth, tenancy, migrations, shared schemas, backend authority,
+  cross-package behavior) add targeted cross-package/integration checks,
+  not a workspace run.
+- Fix rounds: covering tests only (the fix-dispatch contract above).
+- The workspace-wide suite runs once, at the final gate —
+  superpowers:finishing-a-development-branch Step 1 owns its evidence,
+  reuse, and docs-only cases. Task gates never run it, and nobody reruns
+  it because a PR opened: exact-head CI owns suite-level regression after
+  push.
+- Do not repeat recorded verification: reviewers and orchestrators read
+  the implementer's test evidence on unchanged source instead of
+  re-running it, and a fresh worktree needs only the smallest checks that
+  prove a clean start — never a workspace baseline over an unchanged tree.
+- Suite output stays out of context: run through the project's quiet-run
+  wrapper when it provides one and read back exit status, pass count, and
+  failure tail only.
+- A plan or brief mandating broader verification than this policy is a
+  conflict to surface to your human partner, like any plan contradiction —
+  do not silently obey or silently override it.
+
 ## File Handoffs
 
 Everything you paste into a dispatch prompt — and everything a subagent

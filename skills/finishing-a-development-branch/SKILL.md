@@ -34,11 +34,24 @@ satisfied; do not re-run the suite just to reproduce it. This is a
 deliberate, narrowly scoped exception to
 superpowers:verification-before-completion's run-it-yourself rule: it
 applies only to this step, only to a full-suite run at the exact current
-head, and only when you read the recorded output itself. A review
+head (or a head advanced from it solely by the recorded docs-only case
+below), only with a clean worktree, and only when you read the recorded
+output itself. A review
 approval, an agent's "tests pass" claim, or a report missing the command,
-the output, or the SHA never qualifies — nor does a different head, a
-failing run, or a partial/filtered run. Without qualifying evidence, run
-the suite.
+the output, or the SHA never qualifies — nor does a failing run or a
+partial/filtered run. Without qualifying evidence, run the suite.
+
+**Docs-only cases** (both require a clean worktree; the allowlist is:
+Markdown files under `docs/**` or at the repository root, and
+`.superpowers/**` scratch — never a file the application builds, renders,
+or serves, or that CI executes, regardless of path):
+- If every commit in the branch's entire base..head range matches the
+  allowlist, verify and record that range instead — no application suite
+  is required.
+- A head that differs from a qualifying evidenced head only by allowlist
+  commits still qualifies for the reuse above; record it explicitly
+  ("suite at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). Any
+  other head difference disqualifies as before.
 
 **If tests fail:**
 ```
@@ -51,7 +64,8 @@ Cannot proceed with merge/PR until tests pass.
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+**If Step 1 is satisfied** (fresh passing run, qualifying evidence read,
+or a recorded docs-only case): Continue to Step 2.
 
 ### Step 2: Detect Environment
 
@@ -248,7 +262,7 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - Run `git worktree remove` from inside the worktree
 
 **Always:**
-- Verify tests before offering options
+- Satisfy Step 1's verification requirement before offering options
 - Detect environment before presenting menu
 - Present exactly 4 options (or 3 for detached HEAD)
 - Get typed confirmation for Option 4

@@ -120,11 +120,15 @@ if [ -f go.mod ]; then go mod download; fi
 
 ## Step 3: Verify Clean Baseline
 
-Run tests to ensure workspace starts clean:
+Run the smallest focused checks that prove a clean start for the planned
+work — the tests the work will rely on, not a workspace or package-wide
+baseline. When the base commit already has qualifying test evidence or
+authoritative green CI, cite that instead of re-running; docs-only work
+needs no baseline suite.
 
 ```bash
-# Use project-appropriate command
-npm test / cargo test / pytest / go test ./...
+# Project-appropriate command, scoped to the planned work
+npm test path/to/relevant / cargo test module / pytest tests/relevant
 ```
 
 **If tests fail:** Report failures, ask whether to proceed or investigate.
@@ -135,7 +139,7 @@ npm test / cargo test / pytest / go test ./...
 
 ```
 Worktree ready at <full-path>
-Tests passing (<N> tests, 0 failures)
+Baseline: <focused tests passing (N tests, 0 failures) | cited base CI/evidence <ref> | docs-only, no suite required>
 Ready to implement <feature-name>
 ```
 
@@ -190,7 +194,7 @@ Ready to implement <feature-name>
 - Use `git worktree add` when you have a native worktree tool (e.g., `EnterWorktree`). This is the #1 mistake — if you have it, use it.
 - Skip Step 1a by jumping straight to Step 1b's git commands
 - Create worktree without verifying it's ignored (project-local)
-- Skip baseline test verification
+- Skip Step 3's baseline-evidence requirement (focused checks, cited base evidence, or the docs-only case)
 - Proceed with failing tests without asking
 
 **Always:**
@@ -199,4 +203,4 @@ Ready to implement <feature-name>
 - Follow directory priority: explicit instructions > existing project-local directory > default
 - Verify directory is ignored for project-local
 - Auto-detect and run project setup
-- Verify clean test baseline
+- Satisfy Step 3's baseline-evidence requirement

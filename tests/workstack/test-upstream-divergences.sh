@@ -8,11 +8,16 @@ trap 'rm -rf "$fixture"' EXIT
 
 actual_allowlist=$(jq -r '.divergences[].path' "$repo_root/workstack/upstream-divergences.json" | LC_ALL=C sort)
 expected_allowlist=$(printf '%s\n' \
+  skills/dispatching-parallel-agents/SKILL.md \
   skills/finishing-a-development-branch/SKILL.md \
   skills/requesting-code-review/SKILL.md \
   skills/requesting-code-review/code-reviewer.md \
   skills/subagent-driven-development/SKILL.md \
+  skills/subagent-driven-development/implementer-prompt.md \
   skills/subagent-driven-development/task-reviewer-prompt.md \
+  skills/test-driven-development/SKILL.md \
+  skills/using-git-worktrees/SKILL.md \
+  skills/using-superpowers/references/codex-tools.md \
   | LC_ALL=C sort)
 
 if [[ "$actual_allowlist" != "$expected_allowlist" ]]; then

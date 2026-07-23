@@ -3,7 +3,7 @@
   "divergences": [
     {
       "path": "skills/subagent-driven-development/SKILL.md",
-      "reason": "Preserve the fork delegation workflow."
+      "reason": "Preserve the fork delegation workflow; proportional verification-scope policy."
     },
     {
       "path": "skills/subagent-driven-development/task-reviewer-prompt.md",
@@ -19,7 +19,27 @@
     },
     {
       "path": "skills/finishing-a-development-branch/SKILL.md",
-      "reason": "caller-declared completion contract so orchestrated slices reach their gated PR without an interactive options menu; menu remains the default"
+      "reason": "caller-declared completion contract so orchestrated slices reach their gated PR without an interactive options menu; menu remains the default. Exact-head evidence reuse and docs-only Step 1 cases."
+    },
+    {
+      "path": "skills/subagent-driven-development/implementer-prompt.md",
+      "reason": "No self-dispatched reviews; proportional verification scope (affected package suite at task gate, quiet suite output)."
+    },
+    {
+      "path": "skills/using-superpowers/references/codex-tools.md",
+      "reason": "wait_agent MESSAGE is progress not completion; interrupted wait is not failure."
+    },
+    {
+      "path": "skills/using-git-worktrees/SKILL.md",
+      "reason": "Focused baseline checks instead of a workspace-wide suite per new worktree."
+    },
+    {
+      "path": "skills/dispatching-parallel-agents/SKILL.md",
+      "reason": "Integration verification scoped to the affected surface instead of the full suite."
+    },
+    {
+      "path": "skills/test-driven-development/SKILL.md",
+      "reason": "Checklist scopes suite runs to covering tests per the workflow's verification policy."
     }
   ]
 }

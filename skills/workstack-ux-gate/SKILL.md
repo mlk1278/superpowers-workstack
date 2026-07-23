@@ -20,11 +20,11 @@ The environment must actually serve the changed routes with queryable data befor
 
 ## 1. Pathways from the actual diff
 
-Derive 5-10 navigation pathways covering what this diff changed — the flows, entry points, and states the criteria name, not a generic tour of the application.
+Derive the smallest set of navigation pathways covering what this diff changed — the flows, entry points, and states the criteria name, not a generic tour of the application.
 
 ## 2. Scripted capture
 
-Write a throwaway Playwright script under ignored `.superpowers/ux/` that walks every pathway and screenshots each step and state at small (~375px), medium (~768px), and large (~1440px) widths, naming files `<pathway>-<step>-<width>.png`. Exercise the states the criteria name (empty, loading, error, dense data, overlays, overflow) using isolated fixtures or seeded test data. Run the script once per review round. A step the script cannot complete (auth, data, a dead route) is a finding, not a skip. The script is scratch: rerunnable after every fix, deleted at gate close, never committed.
+Enumerate the capture matrix — pathways × states × dimensions — before capturing anything. Widths: capture the supported breakpoints (small ~375px, medium ~768px, large ~1440px) for steps whose markup, copy, layout, or responsive styling the diff touches — including shared styling or layout the step consumes; one representative width suffices where a step's presentation is unchanged. Themes: supported themes only, and only when theme-specific styles or tokens changed or the acceptance criteria require them. Record why any excluded dimension cannot vary. Plans and briefs may bind required coverage through acceptance criteria, but a fixed screenshot count or an unexplained full Cartesian product is a conflict to surface, not obey. Write a throwaway Playwright script under ignored `.superpowers/ux/` that walks the matrix, naming files `<pathway>-<step>-<state>-<width>[-<theme>].png`. Exercise the states the criteria name (empty, loading, error, dense data, overlays, overflow) using isolated fixtures or seeded test data. Run the script once per review round. A step the script cannot complete (auth, data, a dead route) is a finding, not a skip. The script is scratch: rerunnable after every fix, deleted at gate close, never committed.
 
 ## 3. Review the captures
 
@@ -32,7 +32,7 @@ Resolve one `reviewer` with specialty `ux` via workstack-agent-routing; the rout
 
 ## 4. Fix loop
 
-Route the finding set to the owning implementer thread, rerun the capture script on the new head, and send the fresh set to the same reviewer thread. Every round and the final `Pass` bind to the head SHA that was reviewed; a new push invalidates prior evidence. Exception: commits that touch only Markdown files under `docs/**` or at the repository root, or `.superpowers/**` scratch, carry the evidence forward — record it explicitly ("Pass at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). A file the application builds, renders, or serves, or that supplies copy or content shown by the surfaces under review, never qualifies regardless of path. Any other change — code, tests, config, migrations, CI — invalidates as before. Run this gate before the final gate verdict so its fixes land in the gated head.
+Route the finding set to the owning implementer thread, rerun the capture script on the new head for the affected pathways plus one nearest previously passing unchanged state for each affected component within them (record these as the comparison), and send the fresh set to the same reviewer thread. Unaffected captures carry forward only while their rendered dependencies and fixtures are unchanged — a shared style or token change invalidates every consuming capture; record carried vs recaptured. The verdict reports pathways covered separately from raw screenshot count. Every round and the final `Pass` bind to the head SHA that was reviewed; a new push invalidates prior evidence. Exception: commits that touch only Markdown files under `docs/**` or at the repository root, or `.superpowers/**` scratch, carry the evidence forward — record it explicitly ("Pass at `<sha>`; head advanced by docs-only `<sha>..<sha>`"). A file the application builds, renders, or serves, or that supplies copy or content shown by the surfaces under review, never qualifies regardless of path. Any other change — code, tests, config, migrations, CI — invalidates as before. Run this gate before the final gate verdict so its fixes land in the gated head.
 
 ## Rules
 
