@@ -20,13 +20,12 @@ Capture the PR number, branch, current full head SHA, merge state, and the appro
 1. Refresh the PR head, merge state, and unresolved threads. A conflicting PR schedules no CI; resolve the conflict before diagnosing missing checks.
 2. Refresh exact-head CI (`gh pr checks` or the policy file's command). Distinguish failed from pending from unavailable, and fail closed on unavailable — it is not a green result.
 3. Await, and at most once per head request each policy-named provider. Only a current-head review object or an authenticated completion naming the current commit counts as completion; acknowledgements and reactions never do.
-4. Verify findings against the code. Send valid findings as one batch to a fresh implementer routed via workstack-agent-routing, confirm the fixer's fresh passing covering-test evidence and inspect the fixes (never rerun a local workspace suite — exact-head CI owns suite-level regression), push once, then resume the local gate reviewer thread on the delta. Concretely rebut invalid findings on the PR.
-5. Rerun the full local review gate (a review, not a workspace test suite) instead of a delta review when a fix materially changes behavior, architecture, migration, or risk.
-6. If no action is ready, wait one bounded interval (default 180 seconds; policy may override) and refresh. Do not nest another watcher.
+4. Once every awaited provider has completed on the current head, verify findings against the code. Dispatch fixer(s) routed via workstack-agent-routing — one agent for a small or entangled set, several in parallel when findings are independent and touch separate surfaces — confirm each fixer's fresh passing covering-test evidence and inspect the fixes (never rerun a local workspace suite — exact-head CI owns suite-level regression), then push all fixes as one batch. Concretely rebut invalid findings on the PR. The push starts a new evidence cycle; the awaited providers' next round on the new head is the re-review.
+5. If no action is ready, wait one bounded interval (default 180 seconds; policy may override) and refresh. Do not nest another watcher.
 
 ## Fallback
 
-After the policy timeout on one head (default 60 minutes), or on explicit provider failure or rate limiting, exact-head green CI plus the recorded local gate approval is sufficient. Record the fallback reason. Do not switch to a provider the policy does not name.
+A provider that reaches the policy timeout on one head (default 60 minutes), or explicitly fails, skips, or rate-limits, drops out of the awaited set for that head. Record the fallback reason. Every remaining condition still applies — the other awaited providers, exact-head green CI, and the recorded local gate approval. Do not switch to a provider the policy does not name.
 
 ## Merge and return
 
