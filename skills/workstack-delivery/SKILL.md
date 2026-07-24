@@ -45,7 +45,15 @@ That broad final review is the slice gate; do not add another whole-slice review
 
 ## 5. Ship
 
-After approval, invoke superpowers:finishing-a-development-branch with the pull-request completion route and target base branch declared. Hand the resulting PR to workstack-pr-monitor and wait until it reports the PR merged or genuinely blocked.
+After approval, invoke superpowers:finishing-a-development-branch with the pull-request completion route and target base branch declared. Hand the resulting PR to workstack-pr-monitor.
+
+Either wait for the monitor's return, or run it in the background and begin the next task while it monitors — only when all of these hold:
+
+- The next work is independent: it does not build on the in-flight PR's changes and touches no surface its active contract reserves. Dependent work waits for the merge — no stacked branches.
+- At most one PR is in background monitoring; do not open another PR until this one resolves (merged or durably blocked).
+- The monitor stays tracked. Process its return when it arrives — merged: run step 6 for that slice; blocked: surface it to your human partner. Never report the slice complete or end the session while the monitor runs.
+
+The next task starts in its own worktree branched from the current base branch, under the repository's worktree rules (including port isolation). When the monitored PR merges, rebase in-flight lane(s) onto the updated base branch at the next task boundary — always before that lane's broad final review.
 
 ## 6. Reconcile and clean up
 
